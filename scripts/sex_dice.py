@@ -6,6 +6,13 @@ import random
 import pygame
 from math import ceil, exp
 
+# mouse ids
+LEFT_BUTTON = 1
+MIDDLE_BUTTON = 2
+RIGHT_BUTTON = 3
+SCROLL_UP = 4
+SCROLL_DOWN = 5
+
 # parameters
 WINDOW_WIDTH = 640
 WINDOW_HEIGHT = 480
@@ -84,7 +91,7 @@ class Image(pygame.sprite.DirtySprite):
     
 class Button(pygame.sprite.DirtySprite):
 
-    def __init__(self, x, y, w, h,):
+    def __init__(self, x, y, w, h):
         # Call the parent class (Sprite) constructor
         pygame.sprite.DirtySprite.__init__(self)
 
@@ -108,8 +115,34 @@ class Button(pygame.sprite.DirtySprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
+        # add label text
+        text = 'Throw dice'
+        antialias = 1
+        color = (255, 0, 0)
+        font = pygame.font.SysFont("Arial", 22)
+        textSurf = font.render(text, antialias, color)
+        W = textSurf.get_width()
+        H = textSurf.get_height()
+        label_pos = (buttonRect.w/2 - W/2, buttonRect.h/2 - H/2)
+        self.image.blit(textSurf, label_pos)
+
+        # state
+        self.pressed = False
+
     def update(self):
         pass #do something here
+
+    def on_press(self, pos):
+        x, y = pos
+        rect = self.rect
+        if (rect.x <= x) and (x <= (rect.x+rect.w)) \
+           and (rect.y <= y) and (y <= rect.y+rect.h):
+            self.pressed = True
+
+    def on_release(self):
+        if self.pressed:
+            throw_dice()
+            self.pressed = False
     
 def main():
     # initialize game
@@ -127,7 +160,7 @@ def main():
     text = "SEX DICE"
     label_color = pygame.Color("red")
     label_x = 50
-    label_y = 75
+    label_y = PADDING
     label = Text(text,
                  font_size,
                  label_color,
@@ -157,16 +190,26 @@ def main():
     # define render group
     render_group = pygame.sprite.RenderUpdates()
     render_group.add(button, sex_img, label)
-    
+    #for object in clickableObjectsList:
+    #   object.clickCheck(event.pos)
+
     # main loop
     running = True
     while running:
         dt = clock.tick(FRAMES_PER_SECOND)
-        print "Time lapsed: {0}".format(dt)
+        #print "Time lapsed: {0}".format(dt)
         for event in pygame.event.get():
-            # exit game
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN and \
+               event.button == LEFT_BUTTON:
+                mouse_pos = pygame.mouse.get_pos()
+                button.on_press(mouse_pos)
+            elif event.type == pygame.MOUSEBUTTONUP and \
+                 event.button == LEFT_BUTTON:
+                button.on_release()
+                    
+                
             # update view
             render_group.update()
             pygame.display.update(render_group.draw(screen))
