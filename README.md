@@ -1,8 +1,11 @@
-# ml-testing
-Testing environment for Machine learning
+# freeman-repo
 
-Description:
+##Description:
+Various applications and stuff developed by Fredrik W.
 
-Requirements:
+##Requirements:
+Depends on the application!
+There's a requirement file in each subfolder.
 
-Usage:
+##Usage:
+Install requirements and go nuts!
