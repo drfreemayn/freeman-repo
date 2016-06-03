@@ -18,6 +18,15 @@ WINDOW_WIDTH = 640
 WINDOW_HEIGHT = 480
 PADDING = 20
 FRAMES_PER_SECOND = 60
+DICE_WIDTH = 224
+DICE_HEIGHT = 224
+
+DICE_ARRAY = [[0, 0, DICE_WIDTH, DICE_HEIGHT],
+              [DICE_WIDTH, 0, DICE_WIDTH, DICE_HEIGHT],
+              [2*DICE_WIDTH, 0, DICE_WIDTH, DICE_HEIGHT],
+              [0, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT],
+              [DICE_WIDTH, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT],
+              [2*DICE_WIDTH, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT]]
 
 
 class Text(pygame.sprite.DirtySprite):
@@ -47,12 +56,12 @@ class Text(pygame.sprite.DirtySprite):
         
 class Image(pygame.sprite.DirtySprite):
 
-    def __init__(self, x, y, w, h,):
+    def __init__(self, path, x, y, w, h):
         # Call the parent class (Sprite) constructor
         pygame.sprite.DirtySprite.__init__(self)
 
         # create an image surface
-        self.image = pygame.image.load("sex.jpg").convert()
+        self.image = pygame.image.load(path).convert()
         self.image = pygame.transform.scale(self.image, (w, h))
 
         # set pos
@@ -122,34 +131,27 @@ class Button(pygame.sprite.DirtySprite):
         self.pressed = False
         self.draw(self.buttonColorUp)
             
-class Dice(pygame.sprite.DirtySprite):
+class Dice(Image):
     
-    def __init__(self, size, color, x, y):
-        # # Call the parent class (Sprite) constructor
+    def __init__(self, x, y, size):
+        # Call the parent class (Image) constructor
         pygame.sprite.DirtySprite.__init__(self)
-
-        # create a text surface
-        self.antialias = 1
-        self.color = color
-        self.font = pygame.font.SysFont("Arial", size)
-        self.textSurf = self.font.render(str(2), self.antialias, color)  
-        W = self.textSurf.get_width()
-        H = self.textSurf.get_height()
-
-        # create an ordinary surface and add text surf
-        self.image = pygame.Surface((W, H))
-        self.image.blit(self.textSurf, (0, 0))
-
+        
+        dice_path = "sides.jpg"
+        self.img_orig = pygame.image.load(dice_path).convert()
+        
         # set pos
-        self.rect = self.image.get_rect()
+        self.size = size
+        self.rect = self.img_orig.get_rect()
         self.rect.topleft = (x, y)
-
-        #self.counter = 0
+        
+        # initialize
+        self.throw_dice()
 
     def set_number(self, num):
-        self.textSurf = self.font.render(str(num), self.antialias, self.color) 
-        self.image.fill(pygame.Color("black"))
-        self.image.blit(self.textSurf, (0, 0))
+        rect = DICE_ARRAY[num-1]
+        side_img = self.img_orig.subsurface(rect[0], rect[1], rect[2], rect[3])
+        self.image = pygame.transform.scale(side_img, (self.size, self.size))
 
     def generate_outcome(self):
         rng_num = random.random()
@@ -188,11 +190,13 @@ def main():
                  label_y)
 
     # create default image
+    sex_path = "sex.jpg"
     sex_w = (WINDOW_WIDTH/2) - 2*PADDING
     sex_h = (WINDOW_HEIGHT/2) - 2*PADDING
     sex_x = WINDOW_WIDTH/2
     sex_y = PADDING
-    sex_img = Image(sex_x,
+    sex_img = Image(sex_path,
+                    sex_x,
                     sex_y,
                     sex_w,
                     sex_h)
@@ -208,20 +212,16 @@ def main():
                     rect_h)
 
     # create dice
-    dice_size = 48
-    dice_color = pygame.Color("red")
-    dice_x = WINDOW_WIDTH/4 - PADDING
-    dice_y = WINDOW_HEIGHT/4 - PADDING
-    dice = Dice(dice_size,
-                dice_color,
-                dice_x,
-                dice_y)
-
+    dice_x = 90
+    dice_y = 85
+    dize_size = 128
+    dice = Dice(dice_x,
+                dice_y,
+                dize_size)
+                
     # define render group
     render_group = pygame.sprite.RenderUpdates()
     render_group.add(button, sex_img, label, dice)
-    #for object in clickableObjectsList:
-    #   object.clickCheck(event.pos)
 
     # main loop
     running = True
