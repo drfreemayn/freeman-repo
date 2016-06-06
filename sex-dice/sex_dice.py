@@ -18,8 +18,9 @@ WINDOW_WIDTH = 640
 WINDOW_HEIGHT = 480
 PADDING = 20
 FRAMES_PER_SECOND = 60
-DICE_WIDTH = 224
-DICE_HEIGHT = 224
+NUM_DICE_SIDES = 6 
+DICE_WIDTH = 128
+DICE_HEIGHT = 128
 
 DICE_ARRAY = [[0, 0, DICE_WIDTH, DICE_HEIGHT],
               [DICE_WIDTH, 0, DICE_WIDTH, DICE_HEIGHT],
@@ -27,6 +28,8 @@ DICE_ARRAY = [[0, 0, DICE_WIDTH, DICE_HEIGHT],
               [0, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT],
               [DICE_WIDTH, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT],
               [2*DICE_WIDTH, DICE_HEIGHT, DICE_WIDTH, DICE_HEIGHT]]
+              
+FIBONACCI_ARRAY = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 
 
 class Text(pygame.sprite.DirtySprite):
@@ -119,12 +122,14 @@ class Button(pygame.sprite.DirtySprite):
         self.image.blit(textSurf, label_pos)
         # label = Text(text, size, color, self.rect.x, self.rect.y)        
 
-    def on_press(self, pos):
+    def on_press(self, dice, pos):
         x, y = pos
         rect = self.rect
         if (rect.x <= x) and (x <= (rect.x+rect.w)) \
-           and (rect.y <= y) and (y <= rect.y+rect.h):
+           and (rect.y <= y) and (y <= rect.y+rect.h) \
+           and not self.pressed:
             self.pressed = True
+            dice.throw_dice()
             self.draw(self.buttonColorDown)
 
     def on_release(self):
@@ -146,24 +151,41 @@ class Dice(Image):
         self.rect.topleft = (x, y)
         
         # initialize
-        self.throw_dice()
+        self.thrown = False
+        self.frame_counter = 0
+        self.num_counter = 0
+        self.set_random_number()
 
-    def set_number(self, num):
+    def set_random_number(self):
+        num = self.generate_outcome()
         rect = DICE_ARRAY[num-1]
         side_img = self.img_orig.subsurface(rect[0], rect[1], rect[2], rect[3])
         self.image = pygame.transform.scale(side_img, (self.size, self.size))
 
     def generate_outcome(self):
         rng_num = random.random()
-        num_dice_sides = 6    
-        outcome = int(ceil(num_dice_sides * rng_num))
+        outcome = int(ceil(NUM_DICE_SIDES * rng_num))
         return outcome
 
+    def reset(self):
+        self.thrown = False
+        self.num_counter = 0
+        self.frame_counter = 0    
+
+    def update(self):
+        if self.thrown:
+            if (FIBONACCI_ARRAY[self.num_counter] == self.frame_counter):
+                self.frame_counter = 0
+                self.set_random_number()
+                if (self.num_counter == (len(FIBONACCI_ARRAY)-1)):
+                    self.reset()
+                else:
+                    self.num_counter += 1
+            else:
+                self.frame_counter += 1
+
     def throw_dice(self):
-        #a = 0.33/2500;
-        #delay = a *(n*n)
-        outcome = self.generate_outcome()
-        self.set_number(outcome)
+        self.thrown = True
 
 
 def main():
@@ -171,8 +193,8 @@ def main():
     pygame.init()
     pygame.font.init()
     clock = pygame.time.Clock()
-    #logo = pygame.image.load('')
-    #pygame.display.set_icon(logo)
+    logo = pygame.image.load('logo.jpg')
+    pygame.display.set_icon(logo)
     pygame.display.set_caption('Sex dice')
     screen = pygame.display.set_mode((WINDOW_WIDTH-PADDING,
                                       WINDOW_HEIGHT-PADDING))
@@ -234,17 +256,16 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and \
                event.button == LEFT_BUTTON:
                 mouse_pos = pygame.mouse.get_pos()
-                button.on_press(mouse_pos)
+                button.on_press(dice, mouse_pos)
 
             elif event.type == pygame.MOUSEBUTTONUP and \
                  event.button == LEFT_BUTTON:
-                dice.throw_dice()
                 button.on_release()
                     
                 
-            # update view
-            render_group.update()
-            pygame.display.update(render_group.draw(screen))
+        # update view
+        render_group.update()
+        pygame.display.update(render_group.draw(screen))
             
     
 
