@@ -39,16 +39,16 @@ DICE_ARRAY = [[0, 0, DICE_WIDTH, DICE_HEIGHT],
               
 FIBONACCI_ARRAY = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 
-POSITIONS = ['Anal sex',
-             'Missionary',
-             '69',
-             'The Spoon',
-             'Doggystyle',
-             'Cowgirl']
+POSITIONS = [['Anal sex', 'gifs/anal.gif'],
+             ['Missionary', 'gifs/missionary.gif'],
+             ['69', 'gifs/69.gif'],
+             ['Spooning', 'gifs/spooning.gif'],
+             ['Doggystyle', 'gifs/doggystyle.gif'],
+             ['Cowgirl', 'gifs/cowgirl.gif']]
 
 class Text(pygame.sprite.DirtySprite):
 
-    def __init__(self, text, size, color, x, y):
+    def __init__(self, text, size, color, background, x, y):
         # Call the parent class (Sprite) constructor
         pygame.sprite.DirtySprite.__init__(self)
 
@@ -56,11 +56,12 @@ class Text(pygame.sprite.DirtySprite):
         antialias = 1
         self.font = pygame.font.SysFont("Arial", size)
         self.textSurf = self.font.render(text, antialias, color)  
-        W = self.textSurf.get_width()
-        H = self.textSurf.get_height()
+        self.W = self.textSurf.get_width()
+        self.H = self.textSurf.get_height()
 
         # create an ordinary surface and add text surf
-        self.image = pygame.Surface((W, H))
+        self.image = pygame.Surface((self.W, self.H))
+        self.image.fill(background)
         self.image.blit(self.textSurf, (0, 0))
 
         # set pos
@@ -90,30 +91,46 @@ class Image(pygame.sprite.DirtySprite):
         
 class Popup(pygame.sprite.DirtySprite):
     
-    def __init__(self, parent):
+    def __init__(self, w, h, parent):
         # Call the parent class (Sprite) constructor
         pygame.sprite.DirtySprite.__init__(self)
         
         # store ref to parent object
         self.parent = weakref.ref(parent)    # <= garbage-collector safe!
         
-        self.gif = GIFImage("gifs\cowgirl.gif")
-        w = self.gif.get_width()
-        h = self.gif.get_height()
-        x = parent.screen.get_width()/2 - w/2
-        y = parent.screen.get_height()/2 - h/2
-        
-        # create an image surface
+        # create a popup image surface
+        self.width = w
+        self.height = h
         self.image = pygame.Surface((w, h))
-
-        # set pos
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
         
         # set popup status
         self.visible = 0
     
-    def isShowing(self):
+    def set_gif(self):
+        parent = self.parent()
+        sextype = POSITIONS[parent.dice.current_num-1]
+        self.text = Text(sextype[0], 36, RED, WHITE, 0, 0)
+        self.gif = GIFImage(sextype[1])
+        
+        # set pos
+        x = parent.screen.get_width()/2 - self.width/2
+        y = parent.screen.get_height()/2 - self.height/2
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        
+        # create a gif image surface
+        self.image.fill(WHITE)
+        self.gif_surf = pygame.Surface((self.gif.get_width(), 
+                                        self.gif.get_height()))
+        
+    def __update_gif(self):
+        self.gif.render(self.gif_surf, (0,0))
+        self.image.blit(self.text.image, (0,0))
+        PADDING = 10
+        scaled_img = pygame.transform.scale(self.gif_surf, (self.width - 2*PADDING, self.height-self.text.H-2*PADDING))
+        self.image.blit(scaled_img, (PADDING, self.text.H+PADDING))
+    
+    def is_showing(self):
         if self.visible == 1:
             return True
         return False
@@ -129,7 +146,7 @@ class Popup(pygame.sprite.DirtySprite):
     def update(self):
         self.dirty = 0
         if self.visible == 1:
-            self.gif.render(self.image, (0,0))
+            self.__update_gif()
             self.dirty = 1
   
   
@@ -217,14 +234,15 @@ class Dice(pygame.sprite.DirtySprite):
         self.rect.topleft = (x, y)
         
         # initialize
+        self.current_num = 1
         self.thrown = False
         self.frame_counter = 0
         self.num_counter = 0
         self.__set_random_number()
 
     def __set_random_number(self):
-        num = self.__generate_outcome()
-        rect = DICE_ARRAY[num-1]
+        self.current_num = self.__generate_outcome()
+        rect = DICE_ARRAY[self.current_num-1]
         side_img = self.img_orig.subsurface(rect[0], rect[1], rect[2], rect[3])
         self.image = pygame.transform.scale(side_img, (self.size, self.size))
 
@@ -258,6 +276,7 @@ class Dice(pygame.sprite.DirtySprite):
         if self.thrown:
             finished = self.__update_dice()
             if (finished):
+                self.parent().popup.set_gif()
                 self.parent().popup.show()
 
     def throw_dice(self):
@@ -281,11 +300,13 @@ class GameApp(object):
         font_size = 48
         text = "SEX DICE"
         label_color = RED
+        label_background = BLACK
         label_x = 50
         label_y = PADDING
         self.label = Text(text,
                           font_size,
                           label_color,
+                          label_background,
                           label_x,
                           label_y)
 
@@ -322,7 +343,9 @@ class GameApp(object):
                          self)
                     
         # create a gif popup
-        self.popup = Popup(self)
+        popup_w = 400
+        popup_h = 300
+        self.popup = Popup(popup_w, popup_h, self)
 
         # define render group
         self.render_group = pygame.sprite.RenderUpdates()
@@ -342,7 +365,7 @@ class GameApp(object):
         if event.type == pygame.QUIT:
             self.running = False
         if (event.type == pygame.KEYDOWN) and \
-            self.popup.isShowing():
+            self.popup.is_showing():
             self.popup.close()
             self.__clean_screen()
         if (event.type == pygame.MOUSEBUTTONDOWN) and \
@@ -363,7 +386,7 @@ class GameApp(object):
                 self.__processEvent(event)
                     
             # update view
-            if self.popup.isShowing():
+            if self.popup.is_showing():
                 self.popup_group.update()
                 pygame.display.update(self.popup_group.draw(self.screen))
             else:
