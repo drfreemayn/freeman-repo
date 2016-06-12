@@ -1,5 +1,6 @@
 # Instructions for Sex Dice game
 
+## Running the application
 I installed Pygame from http://www.lfd.uci.edu/~gohlke/pythonlibs/.
 Find the wheel that corresponds to your Python version and architecture (Windows 32-bit or 64-bit).
 Then just run pip install <wheel-name>. For Ubuntu I just used sudo apt-get install pygame (I think...).
@@ -9,3 +10,7 @@ https://github.com/lightkeeper/lswindows-lib/blob/master/amd64/python/PIL-1.1.7.
 
 I haven't installed PIL for Ubuntu yet, so I'll get back to you on that.
 But that should be all of it, enjoy!
+
+## Building the application
+- pip install pyinstaller
+- Run build.bat from cmd!
