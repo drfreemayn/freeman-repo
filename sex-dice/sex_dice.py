@@ -133,7 +133,7 @@ class Popup(pygame.sprite.DirtySprite):
         
     def __update_gif(self):
         # add text to image
-        text_w = self.text.image.get_height()
+        text_w = self.text.image.get_width()
         text_h = self.text.image.get_height()
         text_x = self.width/2 - text_w/2
         text_y = PADDING/2
