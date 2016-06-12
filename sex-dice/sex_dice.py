@@ -56,11 +56,11 @@ class Text(pygame.sprite.DirtySprite):
         antialias = 1
         self.font = pygame.font.SysFont("Arial", size)
         self.textSurf = self.font.render(text, antialias, color)  
-        self.W = self.textSurf.get_width()
-        self.H = self.textSurf.get_height()
+        W = self.textSurf.get_width()
+        H = self.textSurf.get_height()
 
         # create an ordinary surface and add text surf
-        self.image = pygame.Surface((self.W, self.H))
+        self.image = pygame.Surface((W, H))
         self.image.fill(background)
         self.image.blit(self.textSurf, (0, 0))
 
@@ -108,6 +108,8 @@ class Popup(pygame.sprite.DirtySprite):
     
     def set_gif(self):
         parent = self.parent()
+        
+        # select text and gif with dice num
         sextype = POSITIONS[parent.dice.current_num-1]
         self.text = Text(sextype[0], 36, RED, WHITE, 0, 0)
         self.gif = GIFImage(sextype[1])
@@ -119,16 +121,28 @@ class Popup(pygame.sprite.DirtySprite):
         self.rect.topleft = (x, y)
         
         # create a gif image surface
-        self.image.fill(WHITE)
+        border_size = 5
+        self.image.fill(DARK_GRAY)
+        border_rect = (border_size,
+                       border_size,
+                       self.width-2*border_size,
+                       self.height-2*border_size)
+        self.image.fill(WHITE, border_rect)
         self.gif_surf = pygame.Surface((self.gif.get_width(), 
                                         self.gif.get_height()))
         
     def __update_gif(self):
+        # add text to image
+        text_w = self.text.image.get_height()
+        text_h = self.text.image.get_height()
+        text_x = self.width/2 - text_w/2
+        text_y = PADDING/2
+        self.image.blit(self.text.image, (text_x, text_y))
+        
+        # update gif, rescale and blit gif to image
         self.gif.render(self.gif_surf, (0,0))
-        self.image.blit(self.text.image, (0,0))
-        PADDING = 10
-        scaled_img = pygame.transform.scale(self.gif_surf, (self.width - 2*PADDING, self.height-self.text.H-2*PADDING))
-        self.image.blit(scaled_img, (PADDING, self.text.H+PADDING))
+        scaled_img = pygame.transform.scale(self.gif_surf, (self.width - 2*PADDING, self.height-text_h-2*PADDING))
+        self.image.blit(scaled_img, (PADDING, text_h+PADDING))
     
     def is_showing(self):
         if self.visible == 1:
@@ -160,16 +174,16 @@ class Button(pygame.sprite.DirtySprite):
         self.parent = weakref.ref(parent)    # <= garbage-collector safe!
 
         # define button
-        # note that buttonRect is not in global coordinates
+        # note that button_rect is not in global coordinates
         # but relative in image
         border_size = 5
-        self.buttonRect = pygame.Rect(border_size,
-                                      border_size,
-                                      w-2*border_size,
-                                      h-2*border_size)
-        self.buttonColorUp = LIGHT_GRAY
-        self.buttonColorDown = DARK_GRAY
-        self.borderColor = WHITE
+        self.button_rect = pygame.Rect(border_size,
+                                       border_size,
+                                       w-2*border_size,
+                                       h-2*border_size)
+        self.color_up = LIGHT_GRAY
+        self.color_down = DARK_GRAY
+        self.border_color = WHITE
         
         # create an image surface
         self.image = pygame.Surface([w, h])
@@ -178,26 +192,23 @@ class Button(pygame.sprite.DirtySprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         
-        self.__draw(self.buttonColorUp)
-        
         # state
         self.pressed = False
+        
+        # draw button
+        self.__draw(self.color_up)
     
     def __draw(self, color):
-        self.image.fill(self.borderColor)
-        self.image.fill(color, self.buttonRect)
+        # color button
+        self.image.fill(self.border_color)
+        self.image.fill(color, self.button_rect)
         
         # add label text
-        text = 'Throw dice'
-        size = 24
-        color = RED
-        antialias = 1
-        font = pygame.font.SysFont("Arial", size)
-        textSurf = font.render(text, antialias, color)
-        W = textSurf.get_width()
-        H = textSurf.get_height()
-        label_pos = (self.buttonRect.w/2 - W/2, self.buttonRect.h/2 - H/2)
-        self.image.blit(textSurf, label_pos)
+        text = Text('Throw dice', 24, RED, color, 0, 0)
+        W = text.image.get_width()
+        H = text.image.get_height()
+        label_pos = (self.button_rect.w/2 - W/2, self.button_rect.h/2 - H/2)
+        self.image.blit(text.image, label_pos)
         
     def update(self):
         self.dirty = 1
@@ -210,26 +221,27 @@ class Button(pygame.sprite.DirtySprite):
            and not self.pressed:
             self.pressed = True
             func()
-            self.__draw(self.buttonColorDown)
+            self.__draw(self.color_down)
 
     def on_release(self):
         self.pressed = False
-        self.__draw(self.buttonColorUp)
+        self.__draw(self.color_up)
             
 class Dice(pygame.sprite.DirtySprite):
     
-    def __init__(self, x, y, size, parent):
+    def __init__(self, x, y, w, h, parent):
         # Call the parent class constructor
         pygame.sprite.DirtySprite.__init__(self)
         
         # store ref to parent object
         self.parent = weakref.ref(parent)    # <= garbage-collector safe!
         
-        dice_path = "sides.jpg"
+        dice_path = "images/sides.jpg"
         self.img_orig = pygame.image.load(dice_path).convert()
         
         # set pos
-        self.size = size
+        self.width = w
+        self.height = h
         self.rect = self.img_orig.get_rect()
         self.rect.topleft = (x, y)
         
@@ -244,7 +256,7 @@ class Dice(pygame.sprite.DirtySprite):
         self.current_num = self.__generate_outcome()
         rect = DICE_ARRAY[self.current_num-1]
         side_img = self.img_orig.subsurface(rect[0], rect[1], rect[2], rect[3])
-        self.image = pygame.transform.scale(side_img, (self.size, self.size))
+        self.image = pygame.transform.scale(side_img, (self.width, self.height))
 
     def __generate_outcome(self):
         rng_num = random.random()
@@ -289,7 +301,7 @@ class GameApp(object):
         # initialize game
         pygame.init()
         pygame.font.init()
-        logo = pygame.image.load('logo.jpg')
+        logo = pygame.image.load('images/logo.jpg')
         pygame.display.set_icon(logo)
         pygame.display.set_caption('Sex dice')
         self.screen = pygame.display.set_mode((WINDOW_WIDTH-PADDING,
@@ -311,7 +323,7 @@ class GameApp(object):
                           label_y)
 
         # create default image
-        sex_path = "sex.jpg"
+        sex_path = "images/sex.jpg"
         sex_w = (WINDOW_WIDTH/2) - 2*PADDING
         sex_h = (WINDOW_HEIGHT/2) - 2*PADDING
         sex_x = WINDOW_WIDTH/2
@@ -336,10 +348,10 @@ class GameApp(object):
         # create dice
         dice_x = 90
         dice_y = 85
-        dize_size = 128
         self.dice = Dice(dice_x,
                          dice_y,
-                         dize_size,
+                         DICE_WIDTH,
+                         DICE_HEIGHT,
                          self)
                     
         # create a gif popup
