@@ -1,11 +1,14 @@
 # freeman-repo
 
-##Description:
+## Description:
 Various applications and stuff developed by Fredrik W.
 
-##Requirements:
+## Instructions
+[Sex Dice](sex-dice/INSTRUCTIONS_SEXDICE.md)
+
+## Requirements:
 Depends on the application!
 There's a requirement file in each subfolder.
 
-##Usage:
+## Usage:
 Install requirements and go nuts!
