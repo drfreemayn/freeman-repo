@@ -135,10 +135,15 @@ QImage MyImageProvider::requestImage(const QString &id, QSize *size, const QSize
   return result;
 }
 
-void MyImageProvider::setImage(const QUrl& imagePath) 
+void MyImageProvider::loadImage(const QUrl& imagePath)
 {
   s_image.load(imagePath.toLocalFile());
   emit newImageSet();
+}
+
+void MyImageProvider::saveImage(const QUrl& imagePath)
+{
+  s_image.save(imagePath.toLocalFile());
 }
 
 void MyImageProvider::smoothImage()

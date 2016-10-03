@@ -11,27 +11,43 @@ ApplicationWindow
     width: 800
     visible: true
 
-	signal imageChosen(url path)
+	signal loadImageChosen(url path)
+	signal saveImageChosen(url path)
 
 	FileDialog {
-		id: imageDialog
-		title: "Please choose an image file"
+		id: loadImageDialog
+		title: "Open file"
 		folder: shortcuts.home
 		nameFilters: ["Image files (*.jpg *.png)"]
 		onAccepted: {
-			appWindow.imageChosen(imageDialog.fileUrl);
+			appWindow.loadImageChosen(loadImageDialog.fileUrl);
+		}
+	}
+
+	FileDialog {
+		id: saveImageDialog
+		title: "Save file"
+		folder: shortcuts.home
+		selectExisting: false
+		nameFilters: ["Image files (*.jpg *.png)"]
+		onAccepted: {
+			appWindow.saveImageChosen(saveImageDialog.fileUrl);
 		}
 	}
 	
 	menuBar: MenuBar {
         Menu {
             title: "File"
-            MenuItem { 
-				text: "Open image" 		
-				onTriggered: imageDialog.open()
+            MenuItem {
+				text: "Open image"
+				onTriggered: loadImageDialog.open()
+			}
+			MenuItem {
+				text: "Save image as..."
+				onTriggered: saveImageDialog.open()
 			}
             MenuItem { 
-				text: "Close" 
+				text: "Exit"
 				onTriggered: Qt.quit()
 			}
         }

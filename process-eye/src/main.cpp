@@ -21,8 +21,10 @@ int main(int argc, char *argv[])
   // Find the main window in the engine and connect a signal
   // for the update image scheme
   QObject *rootObject = engine.rootObjects().first();
-  QObject::connect(rootObject, SIGNAL(imageChosen(QUrl)),
-                   provider, SLOT(setImage(QUrl)));
+  QObject::connect(rootObject, SIGNAL(loadImageChosen(QUrl)),
+                   provider, SLOT(loadImage(QUrl)));
+  QObject::connect(rootObject, SIGNAL(saveImageChosen(QUrl)),
+                   provider, SLOT(saveImage(QUrl)));
 
   // To access child, set propery objectName
   //QObject *qmlObject = rootObject->findChild<QObject*>("appWindow");

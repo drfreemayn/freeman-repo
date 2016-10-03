@@ -16,7 +16,8 @@ public:
   Q_INVOKABLE void smoothImage();
  
 public slots:
-  void setImage(const QUrl& imagePath);
+  void loadImage(const QUrl& imagePath);
+  void saveImage(const QUrl& imagePath);
 
 signals:
   void newImageSet();
