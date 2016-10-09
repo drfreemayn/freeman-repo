@@ -11,9 +11,11 @@ int main(int argc, char *argv[])
   QQmlApplicationEngine engine;
 
   // Add image provider first (required by qml)
-  MyImageProvider* provider = new MyImageProvider(QQuickImageProvider::Image);
+  ImageProcessor* provider = new ImageProcessor(QQuickImageProvider::Image);
   engine.addImageProvider(QLatin1String("imgprovider"), provider);
   engine.rootContext()->setContextProperty("imgprovider", provider);
+
+  qmlRegisterType<Filter>("freeman", 1, 0, "Filter");
 
   // Load GUI from qml
   engine.load(QUrl("qrc:///qml/process-eye.qml"));

@@ -3,6 +3,8 @@
 
 <qresource prefix="/">
     <file>qml/process-eye.qml</file>
+	<file>qml/MainContent.qml</file>
+	<file>qml/FilterModel.qml</file>
     <file>eye.jpg</file>
 </qresource>
 
