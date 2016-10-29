@@ -44,6 +44,18 @@ void ImageProcessor::saveImage(const QUrl& imagePath)
   s_image.save(imagePath.toLocalFile());
 }
 
+void ImageProcessor::rgb2gray(const cv::Mat& inImage, cv::Mat& outImage)
+{
+  if (inImage.channels() > 1)
+  {
+    cv::cvtColor(inImage, outImage, cv::COLOR_RGB2GRAY);
+  }
+  else
+  {
+    outImage = inImage;
+  }
+}
+
 void ImageProcessor::smoothImage(const cv::Mat& inImage, cv::Mat& outImage)
 {
   cv::Size kernel(s_size, s_size);
@@ -79,6 +91,8 @@ void ImageProcessor::processImage(const FilterTypes inFilter)
     case SHARPENING:
       sharpenImage(image, newImage);
       break;
+    case GRAYSCALE:
+      rgb2gray(image, newImage);
   }
 
   s_image = ocv::qt::mat_to_qimage_cpy(newImage);

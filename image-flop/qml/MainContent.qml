@@ -38,21 +38,46 @@ RowLayout {
         Label {
             id: brushLabel
             width: parent.width
+            height: 20
             text: "Brushes"
             font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
         }
 
+        Item {
+            width: parent.width
+            height: 50
+            Label {
+                id: filterLabel
+                width: parent.width
+                text: "Filter size:"
+                font.pixelSize: 14
+            }
+
+            Slider {
+                id: filterSizeSlider
+                width: parent.width
+                anchors.top: filterLabel.bottom
+
+                minimumValue: 3
+                maximumValue: 23
+                updateValueWhileDragging: false
+                stepSize: 2
+                onValueChanged: { imgprovider.filterSize = value; }
+            }
+        }
+
         ListView {
             width: parent.width
-            height: 0.5*parent.height
+            height: 150
             id: listView
 
             Component {
                 id: filterDelegate
                 Button {
+                    id: brushButton
                     width: parent.width
-                    height: parent.height / filterModel.count
+                    height: 50
                     text: filterName
                     onClicked: {
                         listView.currentIndex = index;
@@ -66,26 +91,6 @@ RowLayout {
             focus: true
         }
 
-        Item {
-            width: parent.width
-            height: 100
-            Label {
-                width: parent.width
-                text: "Filter size:"
-                font.pixelSize: 14
-            }
-
-            Slider {
-                id: filterSizeSlider
-                width: parent.width
-                height: 50
-                minimumValue: 3
-                maximumValue: 23
-                updateValueWhileDragging: false
-                stepSize: 2
-                onValueChanged: { imgprovider.filterSize = value; }
-            }
-        }
     }
 
 }

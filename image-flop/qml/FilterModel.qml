@@ -13,4 +13,9 @@ ListModel {
         filterName: "Sharpening"
         filterType: Filter.SHARPENING
     }
+    ListElement {
+        text: "Grayscale"
+        filterName: "Grayscale"
+        filterType: Filter.GRAYSCALE
+    }
 }

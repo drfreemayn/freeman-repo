@@ -20,7 +20,8 @@ public:
   enum FilterTypes
   {
     SMOOTHING = 0,
-    SHARPENING = 1
+    SHARPENING = 1,
+    GRAYSCALE = 2
   };
   Q_ENUMS(FilterTypes)
 
@@ -78,6 +79,7 @@ signals:
 private:
   QImage s_image;
 
+  void rgb2gray(const cv::Mat& inImage, cv::Mat& outImage);
   void smoothImage(const cv::Mat& inImage, cv::Mat& outImage);
   void sharpenImage(const cv::Mat& inImage, cv::Mat& outImage);
 };
