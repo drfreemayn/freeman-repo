@@ -7,9 +7,9 @@ RowLayout {
     anchors.fill: parent
     anchors.margins: 2
 
-	Connections {
+    Connections {
         target: imgprovider
-        onNewImageSet: mainImage.reload(); 
+        onNewImageSet: mainImage.reload();
     }
 
     Image {
@@ -27,7 +27,7 @@ RowLayout {
         MouseArea {
             anchors.fill: parent
             onClicked: imgprovider.processImage(imgprovider.filterType)
-        }       
+        }
     }
 
     Column {
@@ -36,7 +36,7 @@ RowLayout {
         Layout.preferredWidth: parent.width * 0.25 - 5
 
         Label {
-			id: brushLabel
+            id: brushLabel
             width: parent.width
             text: "Brushes"
             font.pixelSize: 16
@@ -45,7 +45,7 @@ RowLayout {
 
         ListView {
             width: parent.width
-			height: 0.5*parent.height
+            height: 0.5*parent.height
             id: listView
 
             Component {
@@ -66,26 +66,26 @@ RowLayout {
             focus: true
         }
 
-		Item {
-			width: parent.width
-			height: 100
-			Label {
-				width: parent.width
-				text: "Filter size:"
-				font.pixelSize: 14
-			}
+        Item {
+            width: parent.width
+            height: 100
+            Label {
+                width: parent.width
+                text: "Filter size:"
+                font.pixelSize: 14
+            }
 
-			Slider {
-				id: filterSizeSlider
-				width: parent.width
-				height: 50
-				minimumValue: 3
-				maximumValue: 23
-				updateValueWhileDragging: false
-				stepSize: 2
-				onValueChanged: { imgprovider.filterSize = value; }
-			}
-		}
+            Slider {
+                id: filterSizeSlider
+                width: parent.width
+                height: 50
+                minimumValue: 3
+                maximumValue: 23
+                updateValueWhileDragging: false
+                stepSize: 2
+                onValueChanged: { imgprovider.filterSize = value; }
+            }
+        }
     }
 
 }

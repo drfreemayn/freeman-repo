@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (process-eye)
+project (image-flop)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
@@ -20,7 +20,7 @@ SET(CMAKE_INSTALL_PREFIX "install")
 
 SET(OpenCV_INCLUDE_DIRS "${EXT}/opencv3.1/opencv/install/include")
 include_directories("${OpenCV_INCLUDE_DIRS}")
-         
+
 SET(OpenCV_LIB_DIR "${EXT}/opencv3.1/opencv/install/x64/vc14/lib")
 link_directories("${OpenCV_LIB_DIR}")
 
@@ -65,10 +65,10 @@ endif ()
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
 SET(SRC_FILES src/main.cpp
-              src/imageprocessing.cpp
+              src/imageprocessor.cpp
               src/mat_and_qimage.cpp)
 
-SET(HEADER_FILES include/imageprocessing.h
+SET(HEADER_FILES include/imageprocessor.h
                  include/mat_and_qimage.hpp)
 
 set(CMAKE_AUTOMOC ON)
@@ -76,7 +76,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 COMPONENTS Quick Core Qml Gui)
 qt5_add_resources(RESOURCES resources.qrc)
-add_executable(process-eye ${SRC_FILES} ${HEADER_FILES} ${RESOURCES})
-qt5_use_modules(process-eye Quick Core Qml Gui)
+add_executable(image-flop ${SRC_FILES} ${HEADER_FILES} ${RESOURCES})
+qt5_use_modules(image-flop Quick Core Qml Gui)
 
-target_link_libraries (process-eye ${OPENCV_LIBS})
+target_link_libraries (image-flop ${OPENCV_LIBS})

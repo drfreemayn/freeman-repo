@@ -1,4 +1,4 @@
-# Process-Eye
+# Image-flop
 A simple image processing program built in QML.
 
 ## Requirements

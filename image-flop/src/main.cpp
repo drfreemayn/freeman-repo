@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
-#include "imageprocessing.h"
+#include "imageprocessor.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   qmlRegisterType<Filter>("freeman", 1, 0, "Filter");
 
   // Load GUI from qml
-  engine.load(QUrl("qrc:///qml/process-eye.qml"));
+  engine.load(QUrl("qrc:///qml/image-flop.qml"));
 
   // Find the main window in the engine and connect a signal
   // for the update image scheme

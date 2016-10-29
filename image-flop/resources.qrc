@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+
+<qresource prefix="/">
+    <file>qml/image-flop.qml</file>
+    <file>qml/MainContent.qml</file>
+    <file>qml/FilterModel.qml</file>
+    <file>eye.jpg</file>
+</qresource>
+
+</RCC>

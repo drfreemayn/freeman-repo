@@ -7,7 +7,7 @@
 
 #include <QFileInfo>
 
-#include "imageprocessing.h"
+#include "imageprocessor.h"
 #include "mat_and_qimage.hpp"
 
 ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType)
@@ -20,13 +20,16 @@ QImage ImageProcessor::requestImage(const QString &id, QSize *size, const QSize&
 {
   QImage result;
 
-  if (requestedSize.isValid()) {
+  if (requestedSize.isValid())
+  {
     result = s_image.scaled(requestedSize, Qt::KeepAspectRatio);
   }
-  else {
+  else
+  {
     result = s_image;
   }
   *size = result.size();
+
   return result;
 }
 
@@ -42,7 +45,7 @@ void ImageProcessor::saveImage(const QUrl& imagePath)
 }
 
 void ImageProcessor::smoothImage(const cv::Mat& inImage, cv::Mat& outImage)
-{ 
+{
   cv::Size kernel(s_size, s_size);
   double sigma = 3;
   cv::GaussianBlur(inImage, outImage, kernel, sigma);
@@ -77,7 +80,6 @@ void ImageProcessor::processImage(const FilterTypes inFilter)
       sharpenImage(image, newImage);
       break;
   }
-
 
   s_image = ocv::qt::mat_to_qimage_cpy(newImage);
   emit newImageSet();
