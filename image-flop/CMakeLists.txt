@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
-set(CMAKE_CONFIGURATION_TYPES Debug Release)
-project (process-eye)
+project (image-flop)
+
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING
@@ -12,11 +13,14 @@ if(NOT EXT)
    set(EXT "" CACHE PATH
        "Define where EXT is located."
        FORCE)
+   message(FATAL_ERROR "Define EXT directory." )
 endif()
 
+SET(CMAKE_INSTALL_PREFIX "install")
+
 SET(OpenCV_INCLUDE_DIRS "${EXT}/opencv3.1/opencv/install/include")
-INCLUDE_DIRECTORIES("${OpenCV_INCLUDE_DIRS}")
-         
+include_directories("${OpenCV_INCLUDE_DIRS}")
+
 SET(OpenCV_LIB_DIR "${EXT}/opencv3.1/opencv/install/x64/vc14/lib")
 link_directories("${OpenCV_LIB_DIR}")
 
@@ -58,6 +62,21 @@ elseif (CMAKE_BUILD_TYPE MATCHES "Debug")
                    opencv_videostab310d.lib)
 endif ()
 
-add_executable(process-eye process-eye.cpp)
+include_directories("${CMAKE_SOURCE_DIR}/include")
 
-target_link_libraries (process-eye "${OPENCV_LIBS}")
+SET(SRC_FILES src/main.cpp
+              src/imageprocessor.cpp
+              src/mat_and_qimage.cpp)
+
+SET(HEADER_FILES include/imageprocessor.h
+                 include/mat_and_qimage.hpp)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+find_package(Qt5 COMPONENTS Quick Core Qml Gui)
+qt5_add_resources(RESOURCES resources.qrc)
+add_executable(image-flop ${SRC_FILES} ${HEADER_FILES} ${RESOURCES})
+qt5_use_modules(image-flop Quick Core Qml Gui)
+
+target_link_libraries (image-flop ${OPENCV_LIBS})
