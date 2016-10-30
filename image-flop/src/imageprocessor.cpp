@@ -115,6 +115,28 @@ void ImageProcessor::rgb2gray(const cv::Mat& inImage, cv::Mat& outImage)
   }
 }
 
+void ImageProcessor::invertImage(const cv::Mat& inImage, cv::Mat& outImage)
+{
+  if (inImage.channels() == 4)
+  {
+    cv::Mat channels[4];
+    cv::split(inImage, channels);
+
+    cv::Mat rgbArray[] = { channels[0], channels[1], channels[2] };
+    cv::Mat rgbIm;
+    cv::merge(rgbArray, 3, rgbIm);
+
+    cv::bitwise_not(rgbIm, rgbIm);
+
+    cv::Mat rgbaArray[] = { rgbIm , channels[3] };
+    cv::merge(rgbaArray, 2, outImage);
+  }
+  else
+  {
+    cv::bitwise_not(inImage, outImage);
+  }
+}
+
 void ImageProcessor::smoothImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage)
 {
   cv::Size kernel(s_size, s_size);
@@ -186,6 +208,10 @@ void ImageProcessor::processImage(const FilterTypes inFilter, int inMouseX, int 
       break;
     case GRAYSCALE:
       rgb2gray(image, newImage);
+      break;
+    case INVERT:
+      invertImage(image, newImage);
+      break;
   }
 
   s_image = ocv::qt::mat_to_qimage_cpy(newImage);

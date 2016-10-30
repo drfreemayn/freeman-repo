@@ -18,4 +18,9 @@ ListModel {
         filterName: "Grayscale"
         filterType: Filter.GRAYSCALE
     }
+    ListElement {
+        text: "Invert"
+        filterName: "Invert"
+        filterType: Filter.INVERT
+    }
 }

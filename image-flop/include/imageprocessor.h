@@ -21,7 +21,8 @@ public:
   {
     SMOOTHING = 0,
     SHARPENING = 1,
-    GRAYSCALE = 2
+    GRAYSCALE = 2,
+    INVERT = 3
   };
   Q_ENUMS(FilterTypes)
 
@@ -89,6 +90,7 @@ private:
                             cv::Rect& outRect);
 
   void rgb2gray(const cv::Mat& inImage, cv::Mat& outImage);
+  void invertImage(const cv::Mat& inImage, cv::Mat& outImage);
   void smoothImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
   void sharpenImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
 };
