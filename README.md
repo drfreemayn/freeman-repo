@@ -6,7 +6,7 @@ Various applications and stuff developed by Fredrik W.
 ## Instructions
 [Sex Dice](sex-dice/INSTRUCTIONS_SEXDICE.md)
 
-[Process Eye](process-eye/INSTRUCTIONS_PROCESSEYE.md)
+[Imageflop](image-flop/INSTRUCTIONS_IMAGEFLOP.md)
 
 ## Requirements:
 Depends on the application!
