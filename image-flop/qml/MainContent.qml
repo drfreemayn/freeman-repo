@@ -26,7 +26,12 @@ RowLayout {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: imgprovider.processImage(imgprovider.filterType)
+            acceptedButtons: Qt.LeftButton
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                imgprovider.setDisplayImageSize(parent.width, parent.height);
+                imgprovider.processImage(imgprovider.filterType, mouseX, mouseY);
+            }
         }
     }
 

@@ -65,9 +65,12 @@ public:
 
   QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
 
-  Q_INVOKABLE void processImage(const FilterTypes inFilter);
+  Q_INVOKABLE void processImage(const FilterTypes inFilter,
+                                int inMouseX = -1,
+                                int inMouseY = -1);
 
-  void setFilterSize(const int inSize);
+  Q_INVOKABLE void setDisplayImageSize(const int inWidth,
+                                       const int inHeight);
 
 public slots:
   void loadImage(const QUrl& imagePath);
@@ -78,10 +81,16 @@ signals:
 
 private:
   QImage s_image;
+  cv::Size s_displaySize;
+
+  bool getValidFilterRegion(const cv::Mat& inImage,
+                            const cv::Point2d inPoint,
+                            const int inSize,
+                            cv::Rect& outRect);
 
   void rgb2gray(const cv::Mat& inImage, cv::Mat& outImage);
-  void smoothImage(const cv::Mat& inImage, cv::Mat& outImage);
-  void sharpenImage(const cv::Mat& inImage, cv::Mat& outImage);
+  void smoothImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
+  void sharpenImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
 };
 
 #endif
