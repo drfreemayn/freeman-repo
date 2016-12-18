@@ -72,8 +72,8 @@ public:
   QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
 
   Q_INVOKABLE void processImage(const FilterTypes inFilter,
-                                int inMouseX = -1,
-                                int inMouseY = -1);
+                                const bool inFullImage,
+                                int inMouseX = -1, int inMouseY = -1);
 
   Q_INVOKABLE void setDisplayImageSize(const int inWidth,
                                        const int inHeight);
@@ -101,16 +101,16 @@ private:
   cv::Size s_displaySize;
 
   void setImage(const QImage& inImage);
+  void addImageToHistory(const QImage& inImage);
 
-  bool getValidFilterRegion(const cv::Mat& inImage,
-                            const cv::Point2d inPoint,
-                            const int inSize,
-                            cv::Rect& outRect);
+  cv::Rect getFilterRegion(const cv::Mat& inImage,
+                           const cv::Point2d inPoint,
+                           const int inSize);
 
   void rgb2gray(const cv::Mat& inImage, cv::Mat& outImage);
   void invertImage(const cv::Mat& inImage, cv::Mat& outImage);
-  void smoothImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
-  void sharpenImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage);
+  void smoothImage(const cv::Mat& inImage, const cv::Rect& inFilterRegion, cv::Mat& outImage);
+  void sharpenImage(const cv::Mat& inImage, const cv::Rect& inFilterRegion, cv::Mat& outImage);
 };
 
 #endif

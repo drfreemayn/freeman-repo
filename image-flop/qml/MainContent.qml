@@ -32,6 +32,14 @@ RowLayout {
                 imgprovider.setDisplayImageSize(parent.width, parent.height);
                 imgprovider.processImage(imgprovider.filterType, mouseX, mouseY);
             }
+            onPositionChanged:
+            {
+              if (pressed)
+              {
+                imgprovider.setDisplayImageSize(parent.width, parent.height);
+                imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
+              }
+            }
         }
     }
 

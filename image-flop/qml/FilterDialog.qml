@@ -32,6 +32,6 @@ Dialog {
 
     onAccepted: {
         imgprovider.filterType = applyFilterModel.get(filterCb.currentIndex).filterType
-        imgprovider.processImage(imgprovider.filterType)
+        imgprovider.processImage(imgprovider.filterType, true)
     }
 }

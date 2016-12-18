@@ -10,22 +10,11 @@
 #include "imageprocessor.h"
 #include "mat_and_qimage.hpp"
 
-bool isPointInsideImage(const cv::Mat& inImage, const cv::Point2d& inCursorPoint)
-{
-  bool valid = false;
-  if ((0 < inCursorPoint.x) && (inCursorPoint.x < (inImage.cols - 1)) &&
-    (0 < inCursorPoint.y) && (inCursorPoint.y < (inImage.rows - 1)))
-  {
-    valid = true;
-  }
-  return valid;
-}
-
 bool isRectInsideImage(const cv::Mat& inImage, const cv::Rect& inRect)
 {
   bool valid = false;
-  if ((inRect.x > 0) && ((inRect.x + inRect.width - 1) < inImage.cols) &&
-    (inRect.y > 0) && ((inRect.y + inRect.height - 1) < inImage.rows))
+  if ((inRect.x >= 0) && ((inRect.x + inRect.width - 1) < inImage.cols) &&
+      (inRect.y >= 0) && ((inRect.y + inRect.height - 1) < inImage.rows))
   {
     valid = true;
   }
@@ -48,7 +37,16 @@ ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType)
 {
   s_image.load(":/eye.jpg");
   s_prevImages.clear();
-  s_prevImages.push_back(s_image);
+  addImageToHistory(s_image);
+}
+
+void ImageProcessor::addImageToHistory(const QImage& inImage)
+{
+  if (s_prevImages.size() == MAX_PREV_IMAGES)
+  {
+    s_prevImages.pop_back();
+  }
+  s_prevImages.push_front(inImage);
 }
 
 QImage ImageProcessor::requestImage(const QString &id, QSize *size, const QSize& requestedSize)
@@ -81,7 +79,7 @@ void ImageProcessor::loadImage(const QUrl& imagePath)
   setImage(image);
 
   s_prevImages.clear();
-  s_prevImages.push_back(s_image);
+  addImageToHistory(image);
 }
 
 void ImageProcessor::saveImage(const QUrl& imagePath)
@@ -132,25 +130,18 @@ void ImageProcessor::setDisplayImageSize(const int inWidth,
   s_displaySize = size;
 }
 
-bool ImageProcessor::getValidFilterRegion(const cv::Mat& inImage,
-                                          const cv::Point2d inPoint,
-                                          const int inSize,
-                                          cv::Rect& outRect)
+cv::Rect ImageProcessor::getFilterRegion(const cv::Mat& inImage,
+                                         const cv::Point2d inPoint,
+                                         const int inSize)
 {
   // increase by 2 since the filter creates invalid borders
+  cv::Rect outRect;
   int actSize = inSize + 2;
   outRect.x = inPoint.x - (actSize - 1) / 2;
   outRect.y = inPoint.y - (actSize - 1) / 2;
   outRect.width = actSize;
   outRect.height = actSize;
-
-  bool valid = false;
-  if (isRectInsideImage(inImage, outRect))
-  {
-    valid = true;
-  }
-
-  return valid;
+  return outRect;
 }
 
 void ImageProcessor::rgb2gray(const cv::Mat& inImage, cv::Mat& outImage)
@@ -187,29 +178,19 @@ void ImageProcessor::invertImage(const cv::Mat& inImage, cv::Mat& outImage)
   }
 }
 
-void ImageProcessor::smoothImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage)
+void ImageProcessor::smoothImage(const cv::Mat& inImage, const cv::Rect& inFilterRegion, cv::Mat& outImage)
 {
   cv::Size kernel(s_size, s_size);
   const double sigma = 3;
+  inImage.copyTo(outImage);
 
-  if (isPointInsideImage(inImage, inCursorPoint))
-  {
-    cv::Rect region;
-    bool valid = getValidFilterRegion(inImage, inCursorPoint, s_size, region);
+  cv::Mat inputRegion = inImage(inFilterRegion);
+  cv::Mat outputRegion = outImage(inFilterRegion);
 
-    inImage.copyTo(outImage);
-    cv::Mat inputRegion = inImage(region);
-    cv::Mat outputRegion = outImage(region);
-
-    cv::GaussianBlur(inputRegion, outputRegion, kernel, sigma);
-  }
-  else
-  {
-    cv::GaussianBlur(inImage, outImage, kernel, sigma); // apply to full image
-  }
+  cv::GaussianBlur(inputRegion, outputRegion, kernel, sigma);
 }
 
-void ImageProcessor::sharpenImage(const cv::Mat& inImage, const cv::Point2d inCursorPoint, cv::Mat& outImage)
+void ImageProcessor::sharpenImage(const cv::Mat& inImage, const cv::Rect& inFilterRegion, cv::Mat& outImage)
 {
   cv::Size kernel(s_size, s_size);
   const double sigma = 3;
@@ -218,43 +199,46 @@ void ImageProcessor::sharpenImage(const cv::Mat& inImage, const cv::Point2d inCu
   cv::Mat floatImg;
   inImage.convertTo(floatImg, CV_64FC4);
 
-  cv::Mat smoothImage;
-  if (isPointInsideImage(inImage, inCursorPoint))
-  {
-    cv::Rect region;
-    bool valid = getValidFilterRegion(inImage, inCursorPoint, s_size, region);
+  floatImg.copyTo(outImage);
+  cv::Mat inputRegion = floatImg(inFilterRegion);
+  cv::Mat outputRegion = outImage(inFilterRegion);
 
-    floatImg.copyTo(outImage);
-    cv::Mat inputRegion = floatImg(region);
-    cv::Mat outputRegion = outImage(region);
-
-    cv::GaussianBlur(inputRegion, smoothImage, kernel, sigma);
-    cv::addWeighted(inputRegion, (1.0 + alfa), smoothImage, -alfa, 0, outputRegion);
-  }
-  else
-  {
-    cv::GaussianBlur(floatImg, smoothImage, kernel, sigma);
-    cv::addWeighted(floatImg, (1.0 + alfa), smoothImage, -alfa, 0, outImage);
-  }
+  cv::GaussianBlur(inputRegion, outputRegion, kernel, sigma);
+  cv::addWeighted(inputRegion, (1.0 + alfa), outputRegion, -alfa, 0, outputRegion);
 
   outImage.convertTo(outImage, CV_8UC4);
 }
 
-void ImageProcessor::processImage(const FilterTypes inFilter, int inMouseX, int inMouseY)
+void ImageProcessor::processImage(const FilterTypes inFilter,
+                                  const bool inFullImage,
+                                  int inMouseX, int inMouseY)
 {
   cv::Mat image = ocv::qt::qimage_to_mat_cpy(s_image);
 
-  cv::Point2d clickedPoint(inMouseX, inMouseY);
-  cv::Point2d actualPoint = rescalePoint(clickedPoint, image, s_displaySize);
-
-  cv::Mat newImage;
-  switch (inFilter)
+  // Define region to apply filter
+  cv::Rect filterRegion(-1, -1, -1, -1);
+  if (inFullImage)
   {
+    filterRegion = cv::Rect(0, 0, image.cols, image.rows);
+  }
+  else
+  {
+    cv::Point2d clickedPoint(inMouseX, inMouseY);
+    cv::Point2d actualPoint = rescalePoint(clickedPoint, image, s_displaySize);
+    filterRegion = getFilterRegion(image, actualPoint, s_size);
+  }
+
+  // Apply filter
+  if (isRectInsideImage(image, filterRegion))
+  {
+    cv::Mat newImage;
+    switch (inFilter)
+    {
     case SMOOTHING:
-      smoothImage(image, actualPoint, newImage);
+      smoothImage(image, filterRegion, newImage);
       break;
     case SHARPENING:
-      sharpenImage(image, actualPoint, newImage);
+      sharpenImage(image, filterRegion, newImage);
       break;
     case GRAYSCALE:
       rgb2gray(image, newImage);
@@ -262,14 +246,10 @@ void ImageProcessor::processImage(const FilterTypes inFilter, int inMouseX, int 
     case INVERT:
       invertImage(image, newImage);
       break;
-  }
+    }
 
-  setImage(ocv::qt::mat_to_qimage_cpy(newImage));
-
-  // add image to previous images
-  if (s_prevImages.size() == MAX_PREV_IMAGES)
-  {
-    s_prevImages.pop_front();
+    QImage newQImg = ocv::qt::mat_to_qimage_cpy(newImage);
+    addImageToHistory(newQImg);
+    setImageIdx(0);
   }
-  s_prevImages.push_front(s_image);
 }
