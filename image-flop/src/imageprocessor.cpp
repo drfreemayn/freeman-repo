@@ -42,9 +42,13 @@ cv::Point2d rescalePoint(const cv::Point2d& inPoint, const cv::Mat& inImage, con
 }
 
 ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType)
-  : QQuickImageProvider(QQuickImageProvider::Image), Filter()
+  : QQuickImageProvider(QQuickImageProvider::Image),
+    Filter(),
+    s_currImageIdx(0)
 {
   s_image.load(":/eye.jpg");
+  s_prevImages.clear();
+  s_prevImages.push_back(s_image);
 }
 
 QImage ImageProcessor::requestImage(const QString &id, QSize *size, const QSize& requestedSize)
@@ -64,15 +68,61 @@ QImage ImageProcessor::requestImage(const QString &id, QSize *size, const QSize&
   return result;
 }
 
+void ImageProcessor::setImage(const QImage& inImage)
+{
+  s_image = inImage.copy();
+  emit imageChanged();
+}
+
 void ImageProcessor::loadImage(const QUrl& imagePath)
 {
-  s_image.load(imagePath.toLocalFile());
-  emit newImageSet();
+  QImage image;
+  image.load(imagePath.toLocalFile());
+  setImage(image);
+
+  s_prevImages.clear();
+  s_prevImages.push_back(s_image);
 }
 
 void ImageProcessor::saveImage(const QUrl& imagePath)
 {
   s_image.save(imagePath.toLocalFile());
+}
+
+int ImageProcessor::getImageIdx()
+{
+  return s_currImageIdx;
+}
+
+void ImageProcessor::setImageIdx(int inIdx)
+{
+  if (0 <= inIdx && inIdx < s_prevImages.size())
+  {
+    s_currImageIdx = inIdx;
+    setImage(s_prevImages.at(s_currImageIdx));
+    emit imageIdxChanged();
+  }
+}
+
+void ImageProcessor::undoImage()
+{
+  if (s_prevImages.size() > 0 && s_currImageIdx < s_prevImages.size() - 1)
+  {
+    setImageIdx(++s_currImageIdx);
+  }
+}
+
+void ImageProcessor::redoImage()
+{
+  if (s_currImageIdx > 0)
+  {
+    setImageIdx(--s_currImageIdx);
+  }
+}
+
+int ImageProcessor::getNumImages()
+{
+  return s_prevImages.size();
 }
 
 void ImageProcessor::setDisplayImageSize(const int inWidth,
@@ -214,6 +264,12 @@ void ImageProcessor::processImage(const FilterTypes inFilter, int inMouseX, int 
       break;
   }
 
-  s_image = ocv::qt::mat_to_qimage_cpy(newImage);
-  emit newImageSet();
+  setImage(ocv::qt::mat_to_qimage_cpy(newImage));
+
+  // add image to previous images
+  if (s_prevImages.size() == MAX_PREV_IMAGES)
+  {
+    s_prevImages.pop_front();
+  }
+  s_prevImages.push_front(s_image);
 }

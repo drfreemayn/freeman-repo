@@ -60,7 +60,12 @@ protected:
 class ImageProcessor : public Filter, public QQuickImageProvider
 {
   Q_OBJECT
+
+  int MAX_PREV_IMAGES = 10;
+
 public:
+
+  Q_PROPERTY(int imageIdx READ getImageIdx WRITE setImageIdx NOTIFY imageIdxChanged)
 
   ImageProcessor(QQuickImageProvider::ImageType);
 
@@ -73,16 +78,29 @@ public:
   Q_INVOKABLE void setDisplayImageSize(const int inWidth,
                                        const int inHeight);
 
+  Q_INVOKABLE void undoImage();
+  Q_INVOKABLE void redoImage();
+
+  Q_INVOKABLE int getImageIdx();
+  Q_INVOKABLE void setImageIdx(int inIdx);
+
+  Q_INVOKABLE int getNumImages();
+
 public slots:
   void loadImage(const QUrl& imagePath);
   void saveImage(const QUrl& imagePath);
 
 signals:
-  void newImageSet();
+  void imageChanged();
+  void imageIdxChanged();
 
 private:
   QImage s_image;
+  QVector<QImage> s_prevImages;
+  int s_currImageIdx;
   cv::Size s_displaySize;
+
+  void setImage(const QImage& inImage);
 
   bool getValidFilterRegion(const cv::Mat& inImage,
                             const cv::Point2d inPoint,

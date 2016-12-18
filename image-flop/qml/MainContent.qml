@@ -9,7 +9,7 @@ RowLayout {
 
     Connections {
         target: imgprovider
-        onNewImageSet: mainImage.reload();
+        onImageChanged: mainImage.reload();
     }
 
     Image {
