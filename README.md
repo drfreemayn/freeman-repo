@@ -8,6 +8,8 @@ Various applications and stuff developed by Fredrik W.
 
 [Imageflop](image-flop/INSTRUCTIONS_IMAGEFLOP.md)
 
+[Face Warp](image-flop/INSTRUCTIONS_FACEWARP.md)
+
 ## Requirements:
 Depends on the application!
 There's a requirement file in each subfolder.
