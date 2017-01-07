@@ -1,9 +1,9 @@
 import os
+import sys
+import argparse
 import numpy as np
 import cv2
 import dlib
-
-BIOID_IMAGE_FOLDER = 'G:/Datasets/BioID/Images/'
 
 FACE_DETECTOR = dlib.get_frontal_face_detector()
 
@@ -12,6 +12,25 @@ PREDICTOR = dlib.shape_predictor(PREDICTOR_PATH)
 
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
+
+def load_image(img_path, grayscale):
+    if not os.path.exists(img_path):
+        print 'Could not find image {0}.'.format(img_path)
+        sys.exit()
+
+    img = cv2.imread(img_path)
+    if img is None:
+        print 'Could not read image {0}.'.format(img_path)
+        sys.exit()
+
+    # convert rgb to grayscale
+    if grayscale:
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
+
+    # resize image to fixed size
+    img = cv2.resize(img, (640,480))
+    return img
 
 def get_facial_points(img):
     # find face in image
@@ -162,8 +181,8 @@ def create_matching_triangles(tri_ind, points):
         tri_list.append(tri)
     return tri_list
 
-def warp_image(img, ref_img, tri, ref_tri):
-    warp_img = ref_img.copy()
+def warp_image(img, ref_img, tri, ref_tri, weight):
+    out_img = ref_img.copy()
 
     # check that both have the same number of triangles
     # assume same order
@@ -171,41 +190,63 @@ def warp_image(img, ref_img, tri, ref_tri):
         for i, tri1 in enumerate(tri):
             tri2 = ref_tri[i]
 
-            # find bounding rects of triangles
+            # Find bounding rects of triangles
             roi1 = cv2.boundingRect(np.float32(tri1))
             roi2 = cv2.boundingRect(np.float32(tri2))
 
-            # calculate local triangle coordinates in sub image
+            # Get sub images
+            sub1 = get_sub_image(img, roi1)
+            sub2 = get_sub_image(out_img, roi2)
+
+            # Calculate local triangle coordinates in sub image
             local_tri1 = get_local_coordinates(tri1, roi1)
             local_tri2 = get_local_coordinates(tri2, roi2)
 
-            # get affine transform from tri1 to tri2 in local coordinates
+            # Get affine transform from tri1 to tri2 in local coordinates
             warp_map = cv2.getAffineTransform(np.float32(local_tri1), np.float32(local_tri2))
 
-            # warp from sub image 1 to sub image 2
-            sub1 = get_sub_image(img, roi1)
+            # Warp sub image 1 into sub image 2
             warp_sub = cv2.warpAffine(np.float32(sub1), warp_map, \
                                       (roi2[2], roi2[3]), \
                                       None, flags=cv2.INTER_LINEAR, \
                                       borderMode=cv2.BORDER_REFLECT_101)
 
-            # create a mask to remove pixels outside the triangle
-            mask = np.zeros((roi2[3], roi2[2], 3), dtype=np.float32)
-            cv2.fillConvexPoly(mask, np.int32(local_tri2), (1.0, 1.0, 1.0), 16)
+            # Create a mask to remove pixels outside the triangle
+            # This is a binary mask of sub 2 with tri 2 filled with ones
+            mask = np.zeros(sub2.shape, dtype=np.float32)
+            cv2.fillConvexPoly(mask, np.int32(local_tri2), (1, 1, 1), 16)
 
             # Apply mask to cropped region
-            warp_sub = np.uint8(warp_sub * mask)
+            # This is the warped image with all pixels outside of the mask set to zero
+            warp_sub = warp_sub * mask
 
-            # Copy triangular region of the rectangular patch to the output image
-            sub2 = get_sub_image(warp_img, roi2)
-            sub2 = sub2 * ((1.0, 1.0, 1.0) - mask)
-            warp_img[roi2[1]:roi2[1]+roi2[3], roi2[0]:roi2[0]+roi2[2]] = sub2 + warp_sub
-    return warp_img
+            # Create a masked and unmasked version of sub2
+            masked_sub2 = sub2 * mask
+            unmasked_sub2 = sub2 * ((1, 1, 1) - mask)
+
+            # Create an intensity interpolated triangle between
+            # warped triangle and original triangle by cross-disolving
+            interpol_sub = cv2.addWeighted(warp_sub, weight, masked_sub2, 1-weight, 0)
+
+            # Insert sub2 without triangle together with interpolated triangle into the output image
+            out_img[roi2[1]:roi2[1]+roi2[3], roi2[0]:roi2[0]+roi2[2]] = unmasked_sub2 + interpol_sub
+    return out_img
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Script for face warping.')
+    parser.add_argument('--img1', default='img1.jpg', help='Path to first image.')
+    parser.add_argument('--img2', default='img2.jpg', help='Path to second image.')
+    parser.add_argument('--weight', type=float, default=0.5, help='Morph weight of first image.')
+    parser.add_argument('--gray', dest='gray', action='store_true')
+    parser.set_defaults(gray=False)
+    return parser.parse_args()
 
 def main():
+    args = parse_args()
+
     # load images
-    img1 = cv2.imread(os.path.join(BIOID_IMAGE_FOLDER, 'BioID_0001.pgm'))
-    img2 = cv2.imread(os.path.join(BIOID_IMAGE_FOLDER, 'BioID_0019.pgm'))
+    img1 = load_image(args.img1, args.gray)
+    img2 = load_image(args.img2, args.gray)
 
     # extract facial points
     points1 = get_facial_points(img1)
@@ -221,7 +262,7 @@ def main():
     draw_triangle_list(img2, 'img2', points2, tri2)
 
     # perform a face warp
-    warp_img = warp_image(img1, img2, tri1, tri2)
+    warp_img = warp_image(img1, img2, tri1, tri2, args.weight)
     cv2.namedWindow('warp')
     cv2.imshow('warp', warp_img)
 
