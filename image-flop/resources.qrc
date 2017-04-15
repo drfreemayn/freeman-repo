@@ -5,6 +5,7 @@
     <file>qml/image-flop.qml</file>
     <file>qml/MainContent.qml</file>
     <file>qml/MainMenuBar.qml</file>
+    <file>qml/ScaleRotateDialog.qml</file>
     <file>qml/FilterDialog.qml</file>
     <file>qml/FilterModel.qml</file>
     <file>eye.jpg</file>

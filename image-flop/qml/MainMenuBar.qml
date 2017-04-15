@@ -45,13 +45,18 @@ MenuBar {
           id: redoMenuItem
           text: "Redo"
           onTriggered: imgprovider.redoImage()
-          shortcut: "Ctrl+Y"
+          shortcut: "Ctrl+Shift+Z"
           enabled: false
         }
         MenuItem {
           text: "Apply global filter"
           onTriggered: applyGlobalFilterDialog.open()
           shortcut: "Ctrl+F"
+        }
+        MenuItem {
+          text: "Apply scaling or rotation"
+          onTriggered: applyScaleRotateDialog.open()
+          shortcut: "Ctrl+R"
         }
     }
 }

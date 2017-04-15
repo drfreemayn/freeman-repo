@@ -39,6 +39,10 @@ ApplicationWindow {
         id: applyGlobalFilterDialog
     }
 
+    ScaleRotateDialog {
+        id: applyScaleRotateDialog
+    }
+
     menuBar: MainMenuBar {}
 
     MainContent {

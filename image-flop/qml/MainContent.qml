@@ -7,38 +7,41 @@ RowLayout {
     anchors.fill: parent
     anchors.margins: 2
 
+    property string img_provider_path: "image://imgprovider/foobar";
+
     Connections {
         target: imgprovider
         onImageChanged: mainImage.reload();
     }
 
-    Image {
-        id: mainImage
-        source: "image://imgprovider/foobar"
-        cache: false
+    ScrollView {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        function reload() {
-            var oldSource = source;
-            source = "";
-            source = oldSource;
-        }
+        id: scrollImage
 
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                imgprovider.setDisplayImageSize(parent.width, parent.height);
-                imgprovider.processImage(imgprovider.filterType, mouseX, mouseY);
+        Image {
+            id: mainImage
+            source: img_provider_path
+            cache: false
+            function reload() {
+                source = img_provider_path + Math.random();
             }
-            onPositionChanged:
-            {
-              if (pressed)
-              {
-                imgprovider.setDisplayImageSize(parent.width, parent.height);
-                imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
-              }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
+                }
+                // TODO: Fix to time-based method, apply at 30 FPS if pressed.
+                onPositionChanged:
+                {
+                  if (pressed)
+                  {
+                    imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
+                  }
+                }
             }
         }
     }
@@ -61,8 +64,7 @@ RowLayout {
             width: parent.width
             height: 50
             Label {
-                id: filterLabel
-                width: parent.width
+                id: filterSizeLabel
                 text: "Filter size:"
                 font.pixelSize: 14
             }
@@ -70,7 +72,7 @@ RowLayout {
             Slider {
                 id: filterSizeSlider
                 width: parent.width
-                anchors.top: filterLabel.bottom
+                anchors.top: filterSizeLabel.bottom
 
                 minimumValue: 3
                 maximumValue: 23
@@ -80,28 +82,23 @@ RowLayout {
             }
         }
 
-        ListView {
+        Item {
             width: parent.width
-            height: 150
-            id: listView
-
-            Component {
-                id: filterDelegate
-                Button {
-                    id: brushButton
-                    width: parent.width
-                    height: 50
-                    text: filterName
-                    onClicked: {
-                        listView.currentIndex = index;
-                        imgprovider.filterType = filterType;
-                    }
-                }
+            height: 50
+            Label {
+                id: filterTypeLabel
+                text: "Filter type:"
+                font.pixelSize: 14
             }
 
-            model: FilterModel { id: filterModel }
-            delegate: filterDelegate
-            focus: true
+            ComboBox {
+                width: parent.width
+                anchors.top: filterTypeLabel.bottom
+                model: FilterModel {}
+                onCurrentIndexChanged: {
+                  imgprovider.filterType = model.get(currentIndex).filterType
+                }
+            }
         }
 
     }

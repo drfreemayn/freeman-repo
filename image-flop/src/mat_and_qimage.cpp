@@ -45,6 +45,7 @@ QImage mat_to_qimage_ref(cv::Mat &mat, bool swap)
         }
 
         case CV_8U :{
+            // TODO: Change to Format_Grayscale8 ?
             return mat_to_qimage_ref(mat, QImage::Format_Indexed8);
         }
 

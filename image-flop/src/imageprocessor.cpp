@@ -21,22 +21,13 @@ bool isRectInsideImage(const cv::Mat& inImage, const cv::Rect& inRect)
   return valid;
 }
 
-cv::Point2d rescalePoint(const cv::Point2d& inPoint, const cv::Mat& inImage, const cv::Size& inDisplaySize)
-{
-  // rescale point to actual image coordinates
-  cv::Point2d newPoint;
-  newPoint.x = inPoint.x * (static_cast<double>(inImage.cols) / inDisplaySize.width);
-  newPoint.y = inPoint.y * (static_cast<double>(inImage.rows) / inDisplaySize.height);
-  return newPoint;
-}
-
-ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType)
-  : QQuickImageProvider(QQuickImageProvider::Image),
-    Filter(),
-    s_currImageIdx(0)
+ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType inType)
+  : Filter(),
+    QQuickImageProvider(inType),
+    s_currImageIdx(0),
+    s_prevImages()
 {
   s_image.load(":/eye.jpg");
-  s_prevImages.clear();
   addImageToHistory(s_image);
 }
 
@@ -123,13 +114,6 @@ int ImageProcessor::getNumImages()
   return s_prevImages.size();
 }
 
-void ImageProcessor::setDisplayImageSize(const int inWidth,
-                                         const int inHeight)
-{
-  cv::Size size(inWidth, inHeight);
-  s_displaySize = size;
-}
-
 cv::Rect ImageProcessor::getFilterRegion(const cv::Mat& inImage,
                                          const cv::Point2d inPoint,
                                          const int inSize)
@@ -209,9 +193,28 @@ void ImageProcessor::sharpenImage(const cv::Mat& inImage, const cv::Rect& inFilt
   outImage.convertTo(outImage, CV_8UC4);
 }
 
+void ImageProcessor::scaleAndRotate(const double inScaleX,
+                                    const double inScaleY,
+                                    const double inAngle)
+{
+  cv::Mat image = ocv::qt::qimage_to_mat_cpy(s_image);
+
+  cv::Mat scaledImage;
+  cv::resize(image, scaledImage, cv::Size(0, 0), inScaleX, inScaleY);
+
+  cv::Point2f rotCenter(scaledImage.cols/2.F, scaledImage.rows/2.F);
+  cv::Mat M = cv::getRotationMatrix2D(rotCenter, inAngle, 1.0);
+  cv::warpAffine(scaledImage, image, M, scaledImage.size());
+
+  QImage newQImg = ocv::qt::mat_to_qimage_cpy(image);
+  addImageToHistory(newQImg);
+  setImageIdx(0);
+}
+
 void ImageProcessor::processImage(const FilterTypes inFilter,
                                   const bool inFullImage,
-                                  int inMouseX, int inMouseY)
+                                  const int inMouseX,
+                                  const int inMouseY)
 {
   cv::Mat image = ocv::qt::qimage_to_mat_cpy(s_image);
 
@@ -223,9 +226,7 @@ void ImageProcessor::processImage(const FilterTypes inFilter,
   }
   else
   {
-    cv::Point2d clickedPoint(inMouseX, inMouseY);
-    cv::Point2d actualPoint = rescalePoint(clickedPoint, image, s_displaySize);
-    filterRegion = getFilterRegion(image, actualPoint, s_size);
+    filterRegion = getFilterRegion(image, cv::Point2d(inMouseX, inMouseY), s_size);
   }
 
   // Apply filter
