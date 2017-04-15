@@ -9,6 +9,12 @@ if(NOT CMAKE_BUILD_TYPE)
        FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  SET(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR }/install" CACHE PATH
+      "Set the desired install path"
+      FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 if(NOT EXT)
    set(EXT "" CACHE PATH
        "Define where EXT is located."
@@ -16,50 +22,31 @@ if(NOT EXT)
    message(FATAL_ERROR "Define EXT directory." )
 endif()
 
-SET(CMAKE_INSTALL_PREFIX "install")
+if(MSVC) # Check if we are using the Visual Studio compiler
+    SET(LIB_PREFIX "")
+    SET(LIB_SUFFIX ".lib")
+    SET(OPENCV_VER "310")
 
-SET(OpenCV_INCLUDE_DIRS "${EXT}/opencv3.1/opencv/install/include")
+    SET(OpenCV_INCLUDE_DIRS "${EXT}/opencv3.1/opencv/install/include")
+    SET(OpenCV_LIB_DIR "${EXT}/opencv3.1/opencv/install/x64/vc14/lib")
+else()
+    SET(LIB_PREFIX "lib")
+    SET(LIB_SUFFIX ".so")
+    SET(OPENCV_VER"")
+
+    SET(OpenCV_INCLUDE_DIRS "${EXT}/opencv/include")
+    SET(OpenCV_LIB_DIR "${EXT}/opencv/lib")
+endif()
+
 include_directories("${OpenCV_INCLUDE_DIRS}")
-
-SET(OpenCV_LIB_DIR "${EXT}/opencv3.1/opencv/install/x64/vc14/lib")
 link_directories("${OpenCV_LIB_DIR}")
 
 if (CMAKE_BUILD_TYPE MATCHES "Release")
-  SET (OPENCV_LIBS opencv_calib3d310.lib
-                   opencv_core310.lib
-                   opencv_features2d310.lib
-                   opencv_flann310.lib
-                   opencv_highgui310.lib
-                   opencv_imgcodecs310.lib
-                   opencv_imgproc310.lib
-                   opencv_ml310.lib
-                   opencv_objdetect310.lib
-                   opencv_photo310.lib
-                   opencv_shape310.lib
-                   opencv_stitching310.lib
-                   opencv_superres310.lib
-                   opencv_ts310.lib
-                   opencv_video310.lib
-                   opencv_videoio310.lib
-                   opencv_videostab310.lib)
+  SET(OPENCV_LIBS "${LIB_PREFIX}opencv_core${OPENCV_VER}${LIB_SUFFIX}"
+                  "${LIB_PREFIX}opencv_imgproc${OPENCV_VER}${LIB_SUFFIX}")
 elseif (CMAKE_BUILD_TYPE MATCHES "Debug")
-  SET (OPENCV_LIBS opencv_calib3d310d.lib
-                   opencv_core310d.lib
-                   opencv_features2d310d.lib
-                   opencv_flann310d.lib
-                   opencv_highgui310d.lib
-                   opencv_imgcodecs310d.lib
-                   opencv_imgproc310d.lib
-                   opencv_ml310d.lib
-                   opencv_objdetect310d.lib
-                   opencv_photo310d.lib
-                   opencv_shape310d.lib
-                   opencv_stitching310d.lib
-                   opencv_superres310d.lib
-                   opencv_ts310d.lib
-                   opencv_video310d.lib
-                   opencv_videoio310d.lib
-                   opencv_videostab310d.lib)
+  SET(OPENCV_LIBS "${LIB_PREFIX}opencv_core${OPENCV_VER}d${LIB_SUFFIX}"
+                  "${LIB_PREFIX}opencv_imgproc${OPENCV_VER}d${LIB_SUFFIX}")
 endif ()
 
 include_directories("${CMAKE_SOURCE_DIR}/include")

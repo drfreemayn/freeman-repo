@@ -4,7 +4,7 @@
 #include <QQuickImageProvider>
 #include <QObject>
 
-#include <opencv2\core.hpp>
+#include <opencv2/core.hpp>
 
 class Filter : public QObject
 {
@@ -14,7 +14,7 @@ public:
   Q_PROPERTY(FilterTypes filterType READ getType WRITE setType)
   Q_PROPERTY(int filterSize READ getSize WRITE setSize)
 
-  Filter::Filter()
+  Filter()
     : s_type(SMOOTHING), s_size(3) {}
 
   enum FilterTypes
