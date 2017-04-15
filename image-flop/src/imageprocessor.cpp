@@ -27,7 +27,7 @@ ImageProcessor::ImageProcessor(QQuickImageProvider::ImageType inType)
     s_currImageIdx(0),
     s_prevImages()
 {
-  s_image.load(":/eye.jpg");
+  s_image.load(":/images/eye.jpg");
   addImageToHistory(s_image);
 }
 

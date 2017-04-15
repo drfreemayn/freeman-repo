@@ -19,6 +19,8 @@ RowLayout {
         Layout.fillHeight: true
         id: scrollImage
 
+        flickableItem.interactive: true
+
         Image {
             id: mainImage
             source: img_provider_path
@@ -28,9 +30,12 @@ RowLayout {
             }
 
             MouseArea {
+                id: mainMouseArea
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton
-                cursorShape: Qt.PointingHandCursor
+                cursorShape: Qt.OpenHandCursor
+                enabled: false
+
                 onClicked: {
                     imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
                 }
@@ -42,22 +47,116 @@ RowLayout {
                     imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
                   }
                 }
+                onWheel: {
+                    if (zoomButton.checked)
+                    {
+                        if (wheel.modifiers & Qt.ControlModifier) {
+                            mainImage.rotation += wheel.angleDelta.y / 120 * 5;
+                            if (Math.abs(photoFrame.rotation) < 4)
+                                mainImage.rotation = 0;
+                        } else {
+                            mainImage.rotation += wheel.angleDelta.x / 120;
+                            if (Math.abs(mainImage.rotation) < 0.6)
+                                mainImage.rotation = 0;
+                            var scaleBefore = mainImage.scale;
+                            mainImage.scale += mainImage.scale * wheel.angleDelta.y / 120 / 10;
+                        }
+                    }
+                }
             }
+
         }
     }
 
     Column {
         spacing: 3
         Layout.fillHeight: true
-        Layout.preferredWidth: parent.width * 0.25 - 5
+        Layout.preferredWidth: 150
 
         Label {
-            id: brushLabel
+            id: toolsLabel
             width: parent.width
             height: 20
-            text: "Brushes"
+            text: "Tools"
             font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
+        }
+
+        RowLayout {
+            width: parent.width
+            height: 50
+            spacing: 5
+
+            Button {
+                id: brushButton
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/images/brush.png"
+                }
+                checkable: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                onCheckedChanged: {
+                    if (checked)
+                    {
+                        zoomButton.checked = false;
+                        mainMouseArea.cursorShape = Qt.PointingHandCursor;
+                    }
+                    else
+                    {
+                        mainMouseArea.cursorShape = Qt.OpenHandCursor;
+                    }
+
+                    mainMouseArea.enabled = !mainMouseArea.enabled;
+                    scrollImage.flickableItem.interactive = !scrollImage.flickableItem.interactive;
+                }
+            }
+
+            Button {
+                id: zoomButton
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/images/magnifier.png"
+                }
+                checkable: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                onCheckedChanged: {
+                    if (checked)
+                    {
+                        brushButton.checked = false;
+                        mainMouseArea.cursorShape = Qt.CrossCursor;
+                    }
+                    else
+                    {
+                        mainMouseArea.cursorShape = Qt.OpenHandCursor;
+                    }
+
+                    mainMouseArea.enabled = !mainMouseArea.enabled;
+                    scrollImage.flickableItem.interactive = !scrollImage.flickableItem.interactive;
+                }
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: 50
+            Label {
+                id: filterTypeLabel
+                text: "Filter type:"
+                font.pixelSize: 14
+            }
+
+            ComboBox {
+                width: parent.width
+                anchors.top: filterTypeLabel.bottom
+                model: FilterModel {}
+                onCurrentIndexChanged: {
+                  imgprovider.filterType = model.get(currentIndex).filterType
+                }
+            }
         }
 
         Item {
@@ -81,26 +180,5 @@ RowLayout {
                 onValueChanged: { imgprovider.filterSize = value; }
             }
         }
-
-        Item {
-            width: parent.width
-            height: 50
-            Label {
-                id: filterTypeLabel
-                text: "Filter type:"
-                font.pixelSize: 14
-            }
-
-            ComboBox {
-                width: parent.width
-                anchors.top: filterTypeLabel.bottom
-                model: FilterModel {}
-                onCurrentIndexChanged: {
-                  imgprovider.filterType = model.get(currentIndex).filterType
-                }
-            }
-        }
-
     }
-
 }
