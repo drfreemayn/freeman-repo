@@ -6,9 +6,12 @@ This is a guide on how to train neural networks on GPU in Python with the Keras 
 - Download and install Anaconda 3. We need it since we don't want to build LAPACK/BLAS.
 - Make sure there are no other python paths in PATH
 - Create a virtual environment for all necessary python packages
-<p>`conda create -n kerasenv python=3.6.1`
-<p>`conda install scipy`
-<p>`pip install keras matplotlib Pillow h5py`
+
+`conda create -n kerasenv python=3.6.1`
+
+`conda install scipy`
+
+`pip install keras matplotlib Pillow h5py`
 
 ## Test your environment
 Activate the virtual environment:
