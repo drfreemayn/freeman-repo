@@ -8,7 +8,9 @@ Various applications and stuff developed by Fredrik W.
 
 [Imageflop](image-flop/INSTRUCTIONS_IMAGEFLOP.md)
 
-[Face Warp](face-warp/INSTRUCTIONS_FACEWARP.md)
+[Face-Warp](face-warp/INSTRUCTIONS_FACEWARP.md)
+
+[Conv-Nets](conv-nets/INSTRUCTIONS_CONVNETS.md)
 
 ## Requirements:
 Depends on the application!
