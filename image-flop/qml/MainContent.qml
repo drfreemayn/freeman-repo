@@ -7,62 +7,163 @@ RowLayout {
     anchors.fill: parent
     anchors.margins: 2
 
+    property string img_provider_path: "image://imgprovider/foobar";
+
     Connections {
         target: imgprovider
         onImageChanged: mainImage.reload();
     }
 
-    Image {
-        id: mainImage
-        source: "image://imgprovider/foobar"
-        cache: false
+    ScrollView {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        function reload() {
-            var oldSource = source;
-            source = "";
-            source = oldSource;
-        }
+        id: scrollImage
 
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                imgprovider.setDisplayImageSize(parent.width, parent.height);
-                imgprovider.processImage(imgprovider.filterType, mouseX, mouseY);
+        flickableItem.interactive: true
+
+        Image {
+            id: mainImage
+            source: img_provider_path
+            cache: false
+            function reload() {
+                source = img_provider_path + Math.random();
             }
-            onPositionChanged:
-            {
-              if (pressed)
-              {
-                imgprovider.setDisplayImageSize(parent.width, parent.height);
-                imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
-              }
+
+            MouseArea {
+                id: mainMouseArea
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                cursorShape: Qt.OpenHandCursor
+                enabled: false
+
+                onClicked: {
+                    imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
+                }
+                // TODO: Fix to time-based method, apply at 30 FPS if pressed.
+                onPositionChanged:
+                {
+                  if (pressed)
+                  {
+                    imgprovider.processImage(imgprovider.filterType, false, mouseX, mouseY);
+                  }
+                }
+                onWheel: {
+                    if (zoomButton.checked)
+                    {
+                        if (wheel.modifiers & Qt.ControlModifier) {
+                            mainImage.rotation += wheel.angleDelta.y / 120 * 5;
+                            if (Math.abs(photoFrame.rotation) < 4)
+                                mainImage.rotation = 0;
+                        } else {
+                            mainImage.rotation += wheel.angleDelta.x / 120;
+                            if (Math.abs(mainImage.rotation) < 0.6)
+                                mainImage.rotation = 0;
+                            var scaleBefore = mainImage.scale;
+                            mainImage.scale += mainImage.scale * wheel.angleDelta.y / 120 / 10;
+                        }
+                    }
+                }
             }
+
         }
     }
 
     Column {
         spacing: 3
         Layout.fillHeight: true
-        Layout.preferredWidth: parent.width * 0.25 - 5
+        Layout.preferredWidth: 150
 
         Label {
-            id: brushLabel
+            id: toolsLabel
             width: parent.width
             height: 20
-            text: "Brushes"
+            text: "Tools"
             font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
+        }
+
+        RowLayout {
+            width: parent.width
+            height: 50
+            spacing: 5
+
+            Button {
+                id: brushButton
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/images/brush.png"
+                }
+                checkable: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                onCheckedChanged: {
+                    if (checked)
+                    {
+                        zoomButton.checked = false;
+                        mainMouseArea.cursorShape = Qt.PointingHandCursor;
+                    }
+                    else
+                    {
+                        mainMouseArea.cursorShape = Qt.OpenHandCursor;
+                    }
+
+                    mainMouseArea.enabled = !mainMouseArea.enabled;
+                    scrollImage.flickableItem.interactive = !scrollImage.flickableItem.interactive;
+                }
+            }
+
+            Button {
+                id: zoomButton
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/images/magnifier.png"
+                }
+                checkable: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                onCheckedChanged: {
+                    if (checked)
+                    {
+                        brushButton.checked = false;
+                        mainMouseArea.cursorShape = Qt.CrossCursor;
+                    }
+                    else
+                    {
+                        mainMouseArea.cursorShape = Qt.OpenHandCursor;
+                    }
+
+                    mainMouseArea.enabled = !mainMouseArea.enabled;
+                    scrollImage.flickableItem.interactive = !scrollImage.flickableItem.interactive;
+                }
+            }
         }
 
         Item {
             width: parent.width
             height: 50
             Label {
-                id: filterLabel
+                id: filterTypeLabel
+                text: "Filter type:"
+                font.pixelSize: 14
+            }
+
+            ComboBox {
                 width: parent.width
+                anchors.top: filterTypeLabel.bottom
+                model: FilterModel {}
+                onCurrentIndexChanged: {
+                  imgprovider.filterType = model.get(currentIndex).filterType
+                }
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: 50
+            Label {
+                id: filterSizeLabel
                 text: "Filter size:"
                 font.pixelSize: 14
             }
@@ -70,7 +171,7 @@ RowLayout {
             Slider {
                 id: filterSizeSlider
                 width: parent.width
-                anchors.top: filterLabel.bottom
+                anchors.top: filterSizeLabel.bottom
 
                 minimumValue: 3
                 maximumValue: 23
@@ -79,31 +180,5 @@ RowLayout {
                 onValueChanged: { imgprovider.filterSize = value; }
             }
         }
-
-        ListView {
-            width: parent.width
-            height: 150
-            id: listView
-
-            Component {
-                id: filterDelegate
-                Button {
-                    id: brushButton
-                    width: parent.width
-                    height: 50
-                    text: filterName
-                    onClicked: {
-                        listView.currentIndex = index;
-                        imgprovider.filterType = filterType;
-                    }
-                }
-            }
-
-            model: FilterModel { id: filterModel }
-            delegate: filterDelegate
-            focus: true
-        }
-
     }
-
 }

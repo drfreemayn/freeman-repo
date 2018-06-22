@@ -1,13 +1,13 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-
-<qresource prefix="/">
-    <file>qml/image-flop.qml</file>
-    <file>qml/MainContent.qml</file>
-    <file>qml/MainMenuBar.qml</file>
-    <file>qml/FilterDialog.qml</file>
-    <file>qml/FilterModel.qml</file>
-    <file>eye.jpg</file>
-</qresource>
-
+<RCC>
+    <qresource prefix="/">
+        <file>qml/image-flop.qml</file>
+        <file>qml/MainContent.qml</file>
+        <file>qml/MainMenuBar.qml</file>
+        <file>qml/ScaleRotateDialog.qml</file>
+        <file>qml/FilterDialog.qml</file>
+        <file>qml/FilterModel.qml</file>
+        <file>images/magnifier.png</file>
+        <file>images/brush.png</file>
+        <file>images/eye.jpg</file>
+    </qresource>
 </RCC>

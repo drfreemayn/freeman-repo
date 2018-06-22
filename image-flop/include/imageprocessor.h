@@ -67,16 +67,18 @@ public:
 
   Q_PROPERTY(int imageIdx READ getImageIdx WRITE setImageIdx NOTIFY imageIdxChanged)
 
-  ImageProcessor(QQuickImageProvider::ImageType);
+  ImageProcessor(QQuickImageProvider::ImageType inType);
 
   QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
 
   Q_INVOKABLE void processImage(const FilterTypes inFilter,
                                 const bool inFullImage,
-                                int inMouseX = -1, int inMouseY = -1);
+                                const int inMouseX = -1,
+                                const int inMouseY = -1);
 
-  Q_INVOKABLE void setDisplayImageSize(const int inWidth,
-                                       const int inHeight);
+  Q_INVOKABLE void scaleAndRotate(const double inScaleX,
+                                  const double inScaleY,
+                                  const double inAngle);
 
   Q_INVOKABLE void undoImage();
   Q_INVOKABLE void redoImage();
@@ -98,7 +100,6 @@ private:
   QImage s_image;
   QVector<QImage> s_prevImages;
   int s_currImageIdx;
-  cv::Size s_displaySize;
 
   void setImage(const QImage& inImage);
   void addImageToHistory(const QImage& inImage);
