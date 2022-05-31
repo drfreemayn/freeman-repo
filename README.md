@@ -1,10 +1,9 @@
 # freeman-repo
 
 ## Description:
-Various applications and stuff developed by Fredrik W.
+Various applications and stuff developed by drfreemayn.
 
 ## Instructions
-[Sex Dice](sex-dice/)
 
 [Imageflop](image-flop/)
 
