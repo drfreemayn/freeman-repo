@@ -4,13 +4,15 @@
 Various applications and stuff developed by Fredrik W.
 
 ## Instructions
-[Sex Dice](sex-dice/INSTRUCTIONS_SEXDICE.md)
+[Sex Dice](sex-dice/)
 
-[Imageflop](image-flop/INSTRUCTIONS_IMAGEFLOP.md)
+[Imageflop](image-flop/)
 
-[Face Warp](face-warp/INSTRUCTIONS_FACEWARP.md)
+[Face Warp](face-warp/)
 
-[Conv-Nets](conv-nets/INSTRUCTIONS_CONVNETS.md)
+[Conv-Nets](conv-nets/)
+
+[PiCam-Capture](picam-capture/)
 
 ## Requirements:
 Depends on the application!
