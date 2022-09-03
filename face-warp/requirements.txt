@@ -1,0 +1,3 @@
+CMake
+opencv-python
+dlib

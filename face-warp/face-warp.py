@@ -15,12 +15,12 @@ RED = (0, 0, 255)
 
 def load_image(img_path, grayscale):
     if not os.path.exists(img_path):
-        print 'Could not find image {0}.'.format(img_path)
+        print(f'Could not find image {img_path}.')
         sys.exit()
 
     img = cv2.imread(img_path)
     if img is None:
-        print 'Could not read image {0}.'.format(img_path)
+        print(f'Could not read image {img_path}.')
         sys.exit()
 
     # convert rgb to grayscale
@@ -98,7 +98,7 @@ def add_border_points(points, rect):
 def get_local_coordinates(tri, rect):
     # Offset points by left top corner of rect
     local_tri = []
-    for i in xrange(0, 3):
+    for i in range(0, 3):
         lx = tri[i][0] - rect[0]
         ly = tri[i][1] - rect[1]
         local_tri.append((lx, ly))
@@ -150,7 +150,7 @@ def draw_triangle_list(img, window_name, points, tri_list):
 
     # show image
     thickness = 1
-    for t in tri_list:
+    for t in np.int32(tri_list):
         cv2.line(debug_img, tuple(t[0]), tuple(t[1]), BLUE, thickness)
         cv2.line(debug_img, tuple(t[0]), tuple(t[2]), BLUE, thickness)
         cv2.line(debug_img, tuple(t[1]), tuple(t[2]), BLUE, thickness)
