@@ -1,21 +1,24 @@
 # freeman-repo
 
-## Description:
+## Description
+
 Various applications and stuff developed by drfreemayn.
 
-## Instructions
+## Projects
 
-[Imageflop](image-flop/)
+- [Imageflop](image-flop/)
 
-[Face Warp](face-warp/)
+- [Face Warp](face-warp/)
 
-[Conv-Nets](conv-nets/)
+- [Conv-Nets](conv-nets/)
 
-[PiCam-Capture](picam-capture/)
+- [PiCam-Capture](picam-capture/)
 
-## Requirements:
+## Requirements
+
 Depends on the application!
 There's a requirement file in each subfolder.
 
-## Usage:
+## Usage
+
 Install requirements and go nuts!
