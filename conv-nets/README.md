@@ -1,28 +1,22 @@
 # Convolutional Neural Networks
-This is a guide on how to train neural networks on GPU in Python with the Keras framework using Theano as backend.
+This is a guide on how to train neural networks on GPU in Python with the Keras framework.
 
 ## Instructions
-- Download and install NVIDIA CUDA Toolkit (cuDNN 5.1 is optinal)
-- Download and install Anaconda 3. We need it since we don't want to build LAPACK/BLAS.
-- Make sure there are no other python paths in PATH
-- Create a virtual environment for all necessary python packages
-
-`conda create -n kerasenv python=3.6.1`
-
-`conda install scipy`
-
-`pip install keras matplotlib Pillow h5py`
+- Download and install [Python3](https://www.python.org/downloads/).
+- Install virtualenv: `pip install virtualenv`.
+- Create a virtual environment: `virtualenv venv`
+- Activate the environment: `venv\Scripts\activate`
+- If you have issues with execution policies: `Set-ExecutionPolicy Unrestricted -Scope Process`
+- Install requirements: `pip install -r requirements.txt`
 
 ## Test your environment
-Activate the virtual environment:
-`source activate kerasenv`
 
 Run MNIST test program:
-`python mnist_test.py --weights test.h5py --train --test`
+`python mnist_test.py --weights test.h5 --train --test`
 
 ## Cifar10 Challenge
 Run the previously trained network:
 `python cifar10_challenge.py --test`
 
 To train and test a new network:
-`python cifar10_challenge.py --weights test.h5py --train --test`
+`python cifar10_challenge.py --weights test.h5 --train --test`

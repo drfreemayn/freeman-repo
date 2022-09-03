@@ -8,8 +8,7 @@ from keras.layers import Dense, Flatten, Dropout
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.datasets import mnist
 from keras.utils import np_utils
-
-import matplotlib.pyplot as plt
+from keras.models import load_model
 
 np.random.seed(1337)
 
@@ -73,14 +72,14 @@ def create_model(input_shape):
 
 def train(train_data, val_data, model, weights_path):
     # Define callbacks
-    earlystop = EarlyStopping(monitor='val_acc',
+    earlystop = EarlyStopping(monitor='val_accuracy',
                               patience=PATIENCE, 
                               verbose=VERBOSE)
     checkpoint = ModelCheckpoint(weights_path,
-                                 monitor='val_acc',
+                                 monitor='val_accuracy',
                                  verbose=VERBOSE,
                                  save_best_only=True,
-                                 save_weights_only=True)
+                                 save_weights_only=False)
     
     # Compile and train
     model.fit(train_data['X'], train_data['Y'],
@@ -92,7 +91,7 @@ def train(train_data, val_data, model, weights_path):
 
 def test(data, model, weights_path):
     # Load weights and evaluate
-    model.load_weights(weights_path)
+    model = load_model(weights_path)
     score = model.evaluate(data['X'], data['Y'],
                            verbose=VERBOSE)
     print('\nTest loss:', score[0])

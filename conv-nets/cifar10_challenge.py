@@ -3,20 +3,17 @@ import numpy as np
 import argparse as ap
 
 import keras.backend as K
-from keras.models import Sequential
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.models import Sequential, load_model
+from keras.layers import Convolution2D, MaxPooling2D, BatchNormalization
 from keras.layers import InputLayer, Dense, Activation, Flatten, Dropout
-from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler
 from keras.datasets import cifar10
 from keras.utils import np_utils
 
-import matplotlib.pyplot as plt
-
 np.random.seed(1337)
 
 NUM_EPOCS = 100
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 VERBOSE = 1
 PATIENCE = 10
 
@@ -121,14 +118,14 @@ def step_decay(epoch):
 
 def train(train_data, val_data, model, weights_path):
     # Define callbacks
-    earlystop = EarlyStopping(monitor='val_acc',
+    earlystop = EarlyStopping(monitor='val_accuracy',
                               patience=PATIENCE,
                               verbose=VERBOSE)
     checkpoint = ModelCheckpoint(weights_path,
-                                 monitor='val_acc',
+                                 monitor='val_accuracy',
                                  verbose=VERBOSE,
                                  save_best_only=True,
-                                 save_weights_only=True)
+                                 save_weights_only=False)
     lrate = LearningRateScheduler(step_decay)
 
     # Compile and train
@@ -141,7 +138,7 @@ def train(train_data, val_data, model, weights_path):
 
 def test(data, model, weights_path):
     # Load weights and evaluate
-    model.load_weights(weights_path)
+    model = load_model(weights_path)
     score = model.evaluate(data['X'], data['Y'],
                            verbose=VERBOSE)
     print('\nTest loss:', score[0])
@@ -155,6 +152,8 @@ def parse_args():
                         action="store_true")
     parser.add_argument("--test", help="Test the current network.",
                         action="store_true")
+    parser.add_argument("--summary", help="Show model summary.",
+                        action="store_true")
     return parser.parse_args()
 
 def main():
@@ -162,6 +161,9 @@ def main():
 
     train_data, test_data, input_shape = load_data()
     model = create_model(input_shape)
+
+    if args.summary:
+        model.summary()
 
     if not (args.train or args.test):
         print('\nYou succesfully ran the script with no action. Add --test or --train!')
