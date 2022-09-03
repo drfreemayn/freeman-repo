@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0)
 project (image-flop)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -10,7 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  SET(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR }/install" CACHE PATH
+  SET(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH
       "Set the desired install path"
       FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -19,7 +19,7 @@ if(NOT EXT)
    set(EXT "" CACHE PATH
        "Define where EXT is located."
        FORCE)
-   message(FATAL_ERROR "Define EXT directory." )
+   message(FATAL_ERROR "Define EXT directory.")
 endif()
 
 if(MSVC) # Check if we are using the Visual Studio compiler
