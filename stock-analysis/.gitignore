@@ -1,0 +1,5 @@
+venv/
+price_data/
+stocks.csv
+tickers.csv
+technicals.csv

@@ -14,6 +14,8 @@ Various applications and stuff developed by drfreemayn.
 
 - [PiCam-Capture](picam-capture/)
 
+- [Stock Analysis](stock-analysis/)
+
 ## Requirements
 
 Depends on the application!

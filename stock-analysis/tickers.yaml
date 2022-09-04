@@ -1,0 +1,24 @@
+# Specify stock tickers to analyze.
+tickers:
+  [
+    "NVDA",
+    "6758.T",
+    "SONY",
+    "PFE",
+    "AZN",
+    "ERIC",
+    "KIND-SDB.ST",
+    "SAAB-B.ST",
+    "BMAX.ST",
+    "SOBI.ST",
+    "TEL2-B.ST",
+    "BETS-B.ST",
+    "INTRUM.ST",
+    "ERIC-B.ST",
+    "SBB-B.ST",
+    "SHB-A.ST",
+    "EMBRAC-B.ST",
+    "ONCO.ST",
+    "VICO.ST",
+    "UBI.PA",
+  ]
