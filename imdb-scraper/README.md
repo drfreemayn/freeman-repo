@@ -15,6 +15,10 @@ An IMDb Top 250 scraper with different functionality.
 
 `python imdb-scraper.py --show`
 
-## Randomly select a movie
+## Randomly recommend a movie
 
-`python imdb-scraper.py --random`
+`python imdb-scraper.py --recommend`
+
+## GUI recommendation application
+
+`python imdb-scraper.py --gui`
