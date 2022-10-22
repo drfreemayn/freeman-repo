@@ -2,15 +2,17 @@
 
 ## Description
 
-Various applications and stuff developed by drfreemayn.
+Various applications and scripts developed by drfreemayn.
 
 ## Projects
 
-- [Imageflop](image-flop/)
+- [Conv-Nets](conv-nets/)
 
 - [Face Warp](face-warp/)
 
-- [Conv-Nets](conv-nets/)
+- [Imageflop](image-flop/)
+
+- [IMDb Scraper](imdb-scraper/)
 
 - [PiCam-Capture](picam-capture/)
 
