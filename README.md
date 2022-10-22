@@ -18,7 +18,9 @@ Various applications and scripts developed by drfreemayn.
 
 - [Stock Analysis](stock-analysis/)
 
-## Requirements
+- [Sex Dice](sex-dice/)
+
+## Requirements:
 
 Depends on the application!
 There's a requirement file in each subfolder.
